@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="_fonts.css">
     <link rel="stylesheet" href="animation.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
   </head>
   <body>
     <div class="header">
@@ -36,7 +37,18 @@
           <li>token</li>
         </ul>
     </div>
-
+    <script>
+      if (navigator.serviceWorker.controller) {
+        console.log('[PWA Builder] active service worker found, no need to register')
+      } else {
+        //Register the ServiceWorker
+        navigator.serviceWorker.register('pwabuilder-sw.js', {
+          scope: './'
+        }).then(function(reg) {
+          console.log('Service worker has been registered for scope:'+ reg.scope);
+        });
+      }
+    </script>
     <script src="anime.min.js"></script>
     <script src="token.js"></script>
   </body>
