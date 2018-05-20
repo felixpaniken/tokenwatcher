@@ -153,10 +153,10 @@ const updateTokenItem = myTokens => {
     // Compare the values so we can make a nice NEW VALUE animation
     if (oldValue == newValue) {
       // No change
-      console.log('values are the same')
+      console.log(`Values same, ${oldValue} - ${newValue}`)
     } else {
       // Change in value
-      console.log('values are different')
+      console.log(`Values different, ${oldValue} - ${newValue}`)
       // A basic animation for when the value has changed
       var valueChange = anime({
         targets: targetToken.querySelector('.tokenValue'),
@@ -169,6 +169,7 @@ const updateTokenItem = myTokens => {
       })
     }
     oldValue = newValue
+    targetToken.querySelector('.tokenValue').innerHTML = newValue
     targetToken.querySelector('.tokenChange').innerHTML = `${
       coinList[k].prices.changeUSD
     } %`.replace('$', '')
