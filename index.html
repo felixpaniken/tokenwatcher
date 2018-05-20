@@ -2,28 +2,42 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="generator" content="SuperHi">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Token</title>
-	
-    <link rel="stylesheet" href="/animation.css"><link rel="stylesheet" href="/_base.css"><link rel="stylesheet" href="/_fonts.css"><link rel="stylesheet" href="/style.css">
-		
+    <link rel="stylesheet" href="_base.css">
+    <link rel="stylesheet" href="_fonts.css">
+    <link rel="stylesheet" href="animation.css">
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <div class="header">
-  <h1>
-    💸💸💸
-  </h1>
-</div>
-<div class="tokenContainer">
-</div>
-<div class="buttonUpdatePrices">
-  <span>And now?</span>
-</div>
+      <h1>
+        💸💸💸
+      </h1>
+    </div>
+    <div class="tokenContainer">
+    </div>
+    <div class="buttonUpdatePrices button">
+      <span>And now?</span>
+    </div>
+    <div class="buttonAllTokens button">
+      <span>Add token</span>
+    </div>
+    
+    <div class="allTokens-container">
+        <form>
+          Search for tokens: <input type="text" name="tokenSearch" id="tokenSearch"><br>
+        </form>
+        <div class="allTokens-close button">
+            <span>Close</span>
+          </div>
+        <ul class="allTokens-list">
+          <li>token</li>
+        </ul>
+    </div>
 
-<script src="anime.min.js"></script>
-<script src="token.js"></script>
-    <script src="/superhi.js"></script>
+    <script src="anime.min.js"></script>
+    <script src="token.js"></script>
   </body>
 </html>

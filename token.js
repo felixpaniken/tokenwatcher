@@ -1,6 +1,9 @@
 // Global variable with the coinlist
 var coinList = {}
 
+// All coins fetched
+var allCoins = {}
+
 // Array for users tokens
 const myTokens = ['ETH', 'BTC', 'APPC', 'XRB']
 
@@ -17,6 +20,7 @@ const initialTokenSetup = () => {
       return response.json()
     })
     .then(data => {
+      allCoins = data.Data
       myTokens.forEach(k => {
         coinList[k] = {
           coinName: data.Data[k].CoinName,
@@ -41,7 +45,7 @@ const fetchTokenPrice = tokens => {
     })
 }
 
-// Handle the JSON data coming from the fetch function
+// Handle the JSON data coming from the fetch function and put the prices into object
 const updateTokenPrice = () => {
   return fetchTokenPrice(myTokens).then(response => {
     const displayData = response.DISPLAY
@@ -168,6 +172,10 @@ const updateTokenItem = myTokens => {
   })
 }
 
+const addToken = alltokens => {
+  
+}
+
 const toggleLoading = state => {
   // If state is true we do or not do
   // dont need == true or anything like that cause the default for boolean is true
@@ -188,6 +196,7 @@ const toggleStarting = state => {
     console.log('Starting')
   } else {
     document.body.classList.remove('starting')
+    document.body.classList.add('started')
     console.log('Started')
   }
 }
@@ -206,11 +215,42 @@ updateButton.addEventListener('click', event => {
   event.preventDefault()
   toggleLoading(true)
   // Get attribute from the link
-  console.log('clicked')
+  console.log('Updating prices via button click')
   updateTokenPrice().then(() => {
     updateTokenItem(myTokens)
     setTimeout(toggleLoading, 500)
   })
+})
+
+// Click to show add more tokens list 
+const allTokensButton = document.querySelector('.buttonAllTokens')
+allTokensButton.addEventListener('click', event => {
+  event.preventDefault()
+  console.log('Showing all tokens list')
+  document.body.classList.add('addingTokens')
+})
+
+// Temporary close allTokens 
+document.querySelector('.allTokens-close').addEventListener('click', event => {
+  event.preventDefault()
+  document.body.classList.remove('addingTokens')
+})
+
+// Handle input in the token search field 
+const allTokenInput = document.querySelector('#tokenSearch')
+allTokenInput.addEventListener('input', event => {
+  let input = (allTokenInput.value)
+  // console.log(allCoins.includes(input)) nooope
+  // return (allCoins.filter(obj => Object.keys(obj).some(key => obj[key].includes(input))))
+  let arr = allCoins
+  let searchKey = input
+  function filterIt(arr, searchKey) {
+    return arr.filter(function(obj) {
+      return Object.keys(obj).some(function(key) {
+        return obj[key].includes(searchKey);
+      })
+    });
+  }
 })
 
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
