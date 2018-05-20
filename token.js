@@ -1,6 +1,9 @@
 // Global variable with the coinlist
 var coinList = {}
 
+// To see if conditions are met before updating prices
+var priceUpdateReady = false
+
 // All coins fetched
 var allCoins = {}
 
@@ -256,10 +259,10 @@ allTokenInput.addEventListener('input', event => {
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
 // https://developers.google.com/web/updates/2017/11/overscroll-behavior
 let _startY
-const inbox = document.querySelector('body')
+const scrollContainer = document.querySelector('body')
 
 
-inbox.addEventListener(
+scrollContainer.addEventListener(
   'touchstart',
   e => {
     _startY = e.touches[0].pageY
@@ -267,11 +270,12 @@ inbox.addEventListener(
   {passive: true}
 )
 
-inbox.addEventListener(
+scrollContainer.addEventListener(
   'touchmove',
   e => {
     const y = e.touches[0].pageY
     const overscrollDistance = y - _startY
+    console.log(overscrollDistance)
     // Activate custom pull-to-refresh effects when at the top of the container
     // and user is scrolling up.
     if (
@@ -282,16 +286,21 @@ inbox.addEventListener(
     ) {
       console.log(overscrollDistance)
       toggleLoading(true)
-      // trying to make it so that the actual update doesn't happen until user releases but this is always active
-      // need a separate function for touchend with the if of distance etc. And the touchmove only records into a variable similar to touchstart function.
-      inbox.addEventListener('touchend', e => {
-        updateTokenPrice().then(() => {
-          updateTokenItem(myTokens)
-          setTimeout(toggleLoading, 500)
-        })
-      })
-      //console.log(overscrollDistance)
+      priceUpdateReady = true
     }
   },
   {passive: true}
 )
+
+
+scrollContainer.addEventListener('touchend', e => {
+  if (priceUpdateReady == true ) {
+    updateTokenPrice().then(() => {
+      updateTokenItem(myTokens)
+      setTimeout(toggleLoading, 500)
+      priceUpdateReady = false
+    })
+  }
+}, {passive: true}
+)
+
