@@ -74,11 +74,14 @@ const createTokenItem = coinList => {
     // This feels old-school, fix
     index = index + 1
     console.log(`Fixa oldschool index räknaren`)
+
     // Setting up the new token Div
     const newTokenDiv = document.createElement('div')
+
     // Giving token div a class
     newTokenDiv.className = 'tokenItem'
     newTokenDiv.dataset.token = coinList[k].coinSymbol
+
     // Setting a animation delay on object according to which order it is
     // This needs to change to only apply for the first animation when the items come in
     const delay = index * 100
@@ -100,6 +103,10 @@ const createTokenItem = coinList => {
     const tokenIcon = document.createElement('div')
     tokenIcon.className = 'tokenItem-icon'
     tokenIcon.style.backgroundImage = `url('${coinList[k].tokenIcon}')`
+
+    // Setting up token change indicator, can be positive or negative :) I hope positive for all of you!
+    const tokenChangeIndicator = document.createElement('div')
+    tokenChangeIndicator.className = 'changeIndicator'
 
     // Create a text string containing the token name of the token
     const tokenName = document.createElement('span')
@@ -134,6 +141,7 @@ const createTokenItem = coinList => {
     newTokenDiv.appendChild(tokenIcon)
     newTokenDiv.appendChild(tokenDivLeft)
     newTokenDiv.appendChild(tokenDivRight)
+    newTokenDiv.appendChild(tokenChangeIndicator)
 
     // Insert the new token item into token container
     tokenContainer.appendChild(newTokenDiv)
@@ -153,10 +161,10 @@ const updateTokenItem = myTokens => {
     // Compare the values so we can make a nice NEW VALUE animation
     if (oldValue == newValue) {
       // No change
-      console.log(`Values same, ${oldValue} - ${newValue}`)
+      //console.log(`Values same, ${oldValue} - ${newValue}`)
     } else {
       // Change in value
-      console.log(`Values different, ${oldValue} - ${newValue}`)
+      //console.log(`Values different, ${oldValue} - ${newValue}`)
       // A basic animation for when the value has changed
       var valueChange = anime({
         targets: targetToken.querySelector('.tokenValue'),
@@ -170,9 +178,21 @@ const updateTokenItem = myTokens => {
     }
     oldValue = newValue
     targetToken.querySelector('.tokenValue').innerHTML = newValue
-    targetToken.querySelector('.tokenChange').innerHTML = `${
-      coinList[k].prices.changeUSD
-    } %`.replace('$', '')
+    let oldChange = targetToken.querySelector('.tokenChange').innerHTML
+    let newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '')
+    let rawChange = coinList[k].prices.changeUSD
+    console.log(`Value changes are, ${oldChange} - ${newChange}`)
+    if (rawChange > 0) {
+      targetToken.classList.remove('negativeChange')
+      targetToken.classList.add('positiveChange')
+      targetToken.querySelector('.changeIndicator').innerHTML = '👍'
+    } else if (rawChange < 0) {
+      targetToken.classList.add('negativeChange')
+      targetToken.classList.remove('positiveCHange')
+      targetToken.querySelector('.changeIndicator').innerHTML = '👎'
+    }
+    targetToken.querySelector('.tokenChange').innerHTML = newChange
+    oldChange = newChange
   })
 }
 
@@ -181,12 +201,29 @@ const addToken = alltokens => {
 }
 
 const toggleLoading = state => {
+  const tokenChangeIndicator = document.querySelectorAll('.changeIndicator')
   // If state is true we do or not do
   // dont need == true or anything like that cause the default for boolean is true
   if (state) {
+    var animateChange = anime({
+      targets: tokenChangeIndicator,
+      scale: 0,
+      opacity: 0,
+      rotate: '1turn',
+      easing: 'easeOutExpo',
+      duration: 1400
+    })
     document.body.classList.add('loading')
     console.log('Loading')
   } else {
+    var animateChange = anime({
+      targets: tokenChangeIndicator,
+      scale: 1,
+      opacity: 1,
+      rotate: '-1turn',
+      easing: 'easeOutElastic',
+      duration: 1400
+    })
     document.body.classList.remove('loading')
     console.log('Loaded')
   }
@@ -204,14 +241,6 @@ const toggleStarting = state => {
     console.log('Started')
   }
 }
-
-// This is the initial setup that runs when app starts
-initialTokenSetup().then(() => {
-  updateTokenPrice().then(() => {
-    createTokenItem(coinList)
-    toggleStarting(false)
-  })
-})
 
 // Click update button (for now) and we update
 const updateButton = document.querySelector('.buttonUpdatePrices')
@@ -276,7 +305,6 @@ scrollContainer.addEventListener(
   e => {
     const y = e.touches[0].pageY
     const overscrollDistance = y - _startY
-    console.log(overscrollDistance)
     // Activate custom pull-to-refresh effects when at the top of the container
     // and user is scrolling up.
     if (
@@ -295,13 +323,23 @@ scrollContainer.addEventListener(
 
 
 scrollContainer.addEventListener('touchend', e => {
-  if (priceUpdateReady == true ) {
+  if (priceUpdateReady === true ) {
     updateTokenPrice().then(() => {
       updateTokenItem(myTokens)
+      // Update is too fast 😎 added a delay so I can do a loading animation
       setTimeout(toggleLoading, 500)
       priceUpdateReady = false
     })
   }
 }, {passive: true}
 )
+
+// This is the initial setup that runs when app starts
+initialTokenSetup().then(() => {
+  updateTokenPrice().then(() => {
+    createTokenItem(coinList)
+    updateTokenItem(myTokens)
+    toggleStarting(false)
+  })
+})
 

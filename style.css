@@ -31,6 +31,22 @@ h1 {
   align-items: center;
 }
 
+.changeIndicator {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin-left: 8px;
+  font-size: 28px;
+  line-height: 40px;
+  text-align: center;
+}
+.tokenItem.positiveChange .changeIndicator {
+  padding-bottom: 4px;
+}
+.tokenItem.negativeChange .changeIndicator {
+  padding-top: 4px;
+}
+
 /* Token items */
 .tokenItem {
   position: relative;
@@ -64,7 +80,7 @@ h1 {
 }
 
 .tokenValue {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   line-height: 2rem;
   font-weight: 500;
 }
@@ -78,16 +94,15 @@ h1 {
 
 .tokenSymbol {
   opacity: 0.5;
-  margin-left: 8px;
+  margin-left: 4px;
 }
 
 .tokenChange {
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   line-height: 2rem;
 }
 
-/* This should be removed later*/
 .button {
   position: relative;
   display: inline-block;
