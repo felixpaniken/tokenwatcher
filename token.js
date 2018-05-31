@@ -4,14 +4,23 @@ var coinList = {}
 // To see if conditions are met before updating prices
 var priceUpdateReady = false
 
+// Overscroll far enough to display all coin list?
+var showAllCoinList = false
+
 // All coins fetched
 var allCoins = {}
 
 // Array for users tokens
-const myTokens = ['ETH', 'BTC', 'APPC', 'XRB']
+const myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
 
 // Container for our tokens
 const tokenContainer = document.querySelector('.tokenContainer')
+
+// Container that keeps all the coins available
+const allTokensContainer = document.querySelector('.allTokens-container')
+
+// Base image URL as reported from fetch
+var baseImageUrl = ""
 
 // Get all coin data
 const initialTokenSetup = () => {
@@ -23,6 +32,8 @@ const initialTokenSetup = () => {
       return response.json()
     })
     .then(data => {
+      //console.log(data)
+      baseImageUrl = data.BaseImageUrl
       allCoins = data.Data
       myTokens.forEach(k => {
         coinList[k] = {
@@ -148,6 +159,37 @@ const createTokenItem = coinList => {
   })
 }
 
+// Populate all tokens list
+const populateAllTokens = () => {
+  // Apparently this is bad performing
+  // https://jsperf.com/objdir
+  // Might try to optimise
+  Object.keys(allCoins).forEach(k => {
+    // Setting up the container
+    const tokenDiv = document.createElement('div')
+    // Giving token div a class
+    tokenDiv.className = 'allTokenItem'
+
+    // Setting up token icon
+    
+    const tokenIcon = document.createElement('div')
+    tokenIcon.className = 'allTokenItem-icon'
+    //tokenIcon.style.backgroundImage = `url('${baseImageUrl}${allCoins[k].ImageUrl}')`
+    // This is not good, OVER 9000 requests for the images etc, make it so that we get image if in viewport
+
+    // Setting up the name of the token
+    const tokenName = document.createElement('span')
+    tokenName.className = 'allTokenName'
+    tokenName.innerHTML = allCoins[k].CoinName
+
+    tokenDiv.appendChild(tokenIcon)
+    tokenDiv.appendChild(tokenName)
+
+    document.querySelector('.allTokens-list').appendChild(tokenDiv)
+    
+  })
+}
+
 // This finds values in token items and updates those values accordingly
 const updateTokenItem = myTokens => {
   console.log('Updating token HTML')
@@ -196,9 +238,6 @@ const updateTokenItem = myTokens => {
   })
 }
 
-const addToken = alltokens => {
-  
-}
 
 const toggleLoading = state => {
   const tokenChangeIndicator = document.querySelectorAll('.changeIndicator')
@@ -263,39 +302,57 @@ allTokensButton.addEventListener('click', event => {
   document.body.classList.add('addingTokens')
 })
 
-// Temporary close allTokens 
-document.querySelector('.allTokens-close').addEventListener('click', event => {
-  event.preventDefault()
-  document.body.classList.remove('addingTokens')
-})
-
 // Handle input in the token search field 
+// Big up: https://www.w3schools.com/howto/howto_js_filter_lists.asp
+// Set up the vars we need
 const allTokenInput = document.querySelector('#tokenSearch')
+// Listen for event and do the filtering
 allTokenInput.addEventListener('input', event => {
-  let input = (allTokenInput.value)
-  // console.log(allCoins.includes(input)) nooope
-  // return (allCoins.filter(obj => Object.keys(obj).some(key => obj[key].includes(input))))
-  let arr = allCoins
-  let searchKey = input
-  function filterIt(arr, searchKey) {
-    return arr.filter(function(obj) {
-      return Object.keys(obj).some(function(key) {
-        return obj[key].includes(searchKey);
-      })
-    });
+  let input, filter, ul, li, a, i;
+  input = allTokenInput
+  filter = input.value.toUpperCase();
+  ul = document.querySelector('.allTokens-list');
+  li = ul.querySelectorAll('.allTokenItem');
+  for (i = 0; i < li.length; i++) {
+    a = li[i].getElementsByTagName("span")[0];
+    if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+        li[i].style.display = "";
+    } else {
+        li[i].style.display = "none";
+    }
   }
+
+  /*
+  if (filter.length > 1) {
+    for (i = 0; i < li.length; i++) {
+      a = li[i].getElementsByTagName("span")[0];
+      if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+          li[i].style.display = "";
+      } else {
+          li[i].style.display = "none";
+      }
+    }
+  } else {
+    console.log(filter)
+    // li.style.display = ""; y no work?
+    const ynowork = document.querySelectorAll('.allTokenItem')
+    ynowork.style.display = "";
+  } */
+
 })
 
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
 // https://developers.google.com/web/updates/2017/11/overscroll-behavior
 let _startY
 const scrollContainer = document.querySelector('body')
+var bottomScroll = 0
 
 
 scrollContainer.addEventListener(
   'touchstart',
   e => {
     _startY = e.touches[0].pageY
+    bottomScroll = scrollContainer.scrollHeight - window.innerHeight
   },
   {passive: true}
 )
@@ -307,15 +364,54 @@ scrollContainer.addEventListener(
     const overscrollDistance = y - _startY
     // Activate custom pull-to-refresh effects when at the top of the container
     // and user is scrolling up.
+    //console.log(overscrollDistance)
     if (
       document.scrollingElement.scrollTop === 0 &&
       y > _startY &&
       !document.body.classList.contains('loading') &&
-      overscrollDistance > 200
+      overscrollDistance > 200 &&
+      !document.body.classList.contains('addingTokens')
     ) {
-      console.log(overscrollDistance)
+      //console.log(overscrollDistance)
       toggleLoading(true)
       priceUpdateReady = true
+    } else if (
+      document.querySelector('.allTokens-container').scrollTop === 0 &&
+      y > _startY &&
+      !document.body.classList.contains('loading') &&
+      overscrollDistance > 200 &&
+      document.body.classList.contains('addingTokens')
+    ) {
+      // To detect if scrolling at top while adding tokens list is open (this should close open token list)
+      // But instead of looking at body we need to look at adding token container
+      // Also look scrolling of body while this is up
+      // Should probably create a function that controls the adding tokens now :)
+      console.log('upp scroll while adding token')
+      var hideAllCoinList = anime({
+        targets: allTokensContainer,
+        translateY: 800,
+        easing: 'easeOutExpo',
+        duration: 800
+      })
+      document.body.classList.remove('addingTokens')
+
+    }
+    else if (document.scrollingElement.scrollTop >= bottomScroll && y < _startY && !document.body.classList.contains('addingTokens')) {
+      //console.log('scrolling at bottom')
+      let negativeOverscrollDistance = overscrollDistance * -1
+      //console.log(negativeOverscrollDistance)
+      var hintAllCoinList = anime({
+        targets: allTokensContainer,
+        translateY: [800, 560],
+        easing: 'easeOutExpo',
+        duration: 200,
+        autoplay: false
+      })
+      hintAllCoinList.seek(hintAllCoinList.duration * ((negativeOverscrollDistance * 0.3) / 100));
+      if (negativeOverscrollDistance > 150) {
+        console.log('get up')
+        showAllCoinList = true
+      }
     }
   },
   {passive: true}
@@ -323,12 +419,27 @@ scrollContainer.addEventListener(
 
 
 scrollContainer.addEventListener('touchend', e => {
-  if (priceUpdateReady === true ) {
+  if (priceUpdateReady === true && !document.body.classList.contains('addingTokens')) {
     updateTokenPrice().then(() => {
       updateTokenItem(myTokens)
       // Update is too fast 😎 added a delay so I can do a loading animation
       setTimeout(toggleLoading, 500)
       priceUpdateReady = false
+    })
+  } if (showAllCoinList === true) {
+    var animateAllCoinList = anime({
+      targets: allTokensContainer,
+      translateY: 0,
+      easing: 'easeOutExpo',
+      duration: 800
+    })
+    document.body.classList.add('addingTokens')
+  } if (showAllCoinList === false) {
+    var hideAllCoinList = anime({
+      targets: allTokensContainer,
+      translateY: 800,
+      easing: 'easeOutExpo',
+      duration: 800
     })
   }
 }, {passive: true}
@@ -340,6 +451,11 @@ initialTokenSetup().then(() => {
     createTokenItem(coinList)
     updateTokenItem(myTokens)
     toggleStarting(false)
+    populateAllTokens()
   })
 })
+
+// For now I'm just populating the all coins list here but it makes sense in the future
+// to do it only when the user wants to add tokens
+
 
