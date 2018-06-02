@@ -5,7 +5,7 @@ var coinList = {}
 var priceUpdateReady = false
 
 // Overscroll far enough to display all coin list?
-var showAllCoinList = false
+var showAllCoinsReady = false
 
 // All coins fetched
 var allCoins = {}
@@ -21,6 +21,9 @@ const allTokensContainer = document.querySelector('.allTokens-container')
 
 // Base image URL as reported from fetch
 var baseImageUrl = ""
+
+// Use everywhere viewport height, used to hide the all coins container
+var viewportHeight = window.innerHeight
 
 // Get all coin data
 const initialTokenSetup = () => {
@@ -171,7 +174,6 @@ const populateAllTokens = () => {
     tokenDiv.className = 'allTokenItem'
 
     // Setting up token icon
-    
     const tokenIcon = document.createElement('div')
     tokenIcon.className = 'allTokenItem-icon'
     //tokenIcon.style.backgroundImage = `url('${baseImageUrl}${allCoins[k].ImageUrl}')`
@@ -238,7 +240,7 @@ const updateTokenItem = myTokens => {
   })
 }
 
-
+// This puts app into loading state
 const toggleLoading = state => {
   const tokenChangeIndicator = document.querySelectorAll('.changeIndicator')
   // If state is true we do or not do
@@ -268,6 +270,7 @@ const toggleLoading = state => {
   }
 }
 
+// This puts app into starting state
 const toggleStarting = state => {
   // If state is true we do or not do
   // dont need == true or anything like that cause the default for boolean is true
@@ -280,27 +283,6 @@ const toggleStarting = state => {
     console.log('Started')
   }
 }
-
-// Click update button (for now) and we update
-const updateButton = document.querySelector('.buttonUpdatePrices')
-updateButton.addEventListener('click', event => {
-  event.preventDefault()
-  toggleLoading(true)
-  // Get attribute from the link
-  console.log('Updating prices via button click')
-  updateTokenPrice().then(() => {
-    updateTokenItem(myTokens)
-    setTimeout(toggleLoading, 500)
-  })
-})
-
-// Click to show add more tokens list 
-const allTokensButton = document.querySelector('.buttonAllTokens')
-allTokensButton.addEventListener('click', event => {
-  event.preventDefault()
-  console.log('Showing all tokens list')
-  document.body.classList.add('addingTokens')
-})
 
 // Handle input in the token search field 
 // Big up: https://www.w3schools.com/howto/howto_js_filter_lists.asp
@@ -338,15 +320,34 @@ allTokenInput.addEventListener('input', event => {
     const ynowork = document.querySelectorAll('.allTokenItem')
     ynowork.style.display = "";
   } */
-
 })
+
+// Function to enable all tokens picker
+const showAllCoins = () => {
+  var animateAllCoinList = anime({
+    targets: allTokensContainer,
+    translateY: 0,
+    easing: 'easeOutExpo',
+    duration: 800
+  })
+  document.body.classList.add('addingTokens')
+}
+
+const hideAllCoins = () => {
+  var hideAllCoinList = anime({
+    targets: allTokensContainer,
+    translateY: viewportHeight,
+    easing: 'easeOutExpo',
+    duration: 800
+  })
+  document.body.classList.remove('addingTokens')
+}
 
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
 // https://developers.google.com/web/updates/2017/11/overscroll-behavior
 let _startY
 const scrollContainer = document.querySelector('body')
 var bottomScroll = 0
-
 
 scrollContainer.addEventListener(
   'touchstart',
@@ -375,34 +376,13 @@ scrollContainer.addEventListener(
       //console.log(overscrollDistance)
       toggleLoading(true)
       priceUpdateReady = true
-    } else if (
-      document.querySelector('.allTokens-container').scrollTop === 0 &&
-      y > _startY &&
-      !document.body.classList.contains('loading') &&
-      overscrollDistance > 200 &&
-      document.body.classList.contains('addingTokens')
-    ) {
-      // To detect if scrolling at top while adding tokens list is open (this should close open token list)
-      // But instead of looking at body we need to look at adding token container
-      // Also look scrolling of body while this is up
-      // Should probably create a function that controls the adding tokens now :)
-      console.log('upp scroll while adding token')
-      var hideAllCoinList = anime({
-        targets: allTokensContainer,
-        translateY: 800,
-        easing: 'easeOutExpo',
-        duration: 800
-      })
-      document.body.classList.remove('addingTokens')
-
-    }
-    else if (document.scrollingElement.scrollTop >= bottomScroll && y < _startY && !document.body.classList.contains('addingTokens')) {
+    } else if (document.scrollingElement.scrollTop >= bottomScroll && y < _startY && !document.body.classList.contains('addingTokens')) {
       //console.log('scrolling at bottom')
       let negativeOverscrollDistance = overscrollDistance * -1
       //console.log(negativeOverscrollDistance)
       var hintAllCoinList = anime({
         targets: allTokensContainer,
-        translateY: [800, 560],
+        translateY: [viewportHeight, 560],
         easing: 'easeOutExpo',
         duration: 200,
         autoplay: false
@@ -410,39 +390,75 @@ scrollContainer.addEventListener(
       hintAllCoinList.seek(hintAllCoinList.duration * ((negativeOverscrollDistance * 0.3) / 100));
       if (negativeOverscrollDistance > 150) {
         console.log('get up')
-        showAllCoinList = true
+        showAllCoinsReady = true
       }
     }
   },
   {passive: true}
 )
 
-
 scrollContainer.addEventListener('touchend', e => {
   if (priceUpdateReady === true && !document.body.classList.contains('addingTokens')) {
     updateTokenPrice().then(() => {
       updateTokenItem(myTokens)
-      // Update is too fast 😎 added a delay so I can do a loading animation
+      // Update is too fast added a delay so I can do a loading animation
       setTimeout(toggleLoading, 500)
       priceUpdateReady = false
     })
-  } if (showAllCoinList === true) {
-    var animateAllCoinList = anime({
-      targets: allTokensContainer,
-      translateY: 0,
-      easing: 'easeOutExpo',
-      duration: 800
-    })
-    document.body.classList.add('addingTokens')
-  } if (showAllCoinList === false) {
-    var hideAllCoinList = anime({
-      targets: allTokensContainer,
-      translateY: 800,
-      easing: 'easeOutExpo',
-      duration: 800
-    })
+  } if (showAllCoinsReady === true) {
+    showAllCoins()
+  } if (showAllCoinsReady === false) {
+    hideAllCoins()
   }
 }, {passive: true}
+)
+
+// Touch, scroll and overscroll events for the all tokens container
+allTokensContainer.addEventListener(
+  'touchstart',
+  e => {
+    _startY = e.touches[0].pageY
+    bottomScroll = allTokensContainer.scrollHeight - window.innerHeight
+  },
+  {passive: true}
+)
+
+allTokensContainer.addEventListener(
+  'touchmove',
+  e => {
+    const y = e.touches[0].pageY
+    const overscrollDistance = y - _startY
+    // Activate custom pull-to-refresh effects when at the top of the container
+    // and user is scrolling up.
+    //console.log(overscrollDistance)
+    if (
+      allTokensContainer.scrollTop === 0 &&
+      y > _startY &&
+      !document.body.classList.contains('loading') &&
+      document.body.classList.contains('addingTokens')
+    ) {
+      // To detect if scrolling at top while adding tokens list is open (this should close open token list)
+      // But instead of looking at body we need to look at adding token container
+      // Also look scrolling of body while this is up
+      // Should probably create a function that controls the adding tokens now :)
+      console.log('upp scroll while adding token')
+      // Animating the all coin list container
+      var hintAllCoinList = anime({
+        targets: allTokensContainer,
+        translateY: [0, overscrollDistance],
+        easing: 'easeOutExpo',
+        duration: 1000,
+        autoplay: false
+      })
+      hintAllCoinList.seek(hintAllCoinList.duration * ((overscrollDistance * 0.3) / 100));
+      if (overscrollDistance > 150) {
+        console.log('get down')
+        showAllCoinsReady = false
+      }
+
+    }
+  },
+  {passive: true}
 )
 
 // This is the initial setup that runs when app starts
