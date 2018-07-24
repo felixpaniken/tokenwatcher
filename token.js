@@ -329,9 +329,8 @@ allTokenInput.addEventListener('input', event => {
   } */
 })
 
+// Load icons in the all tokens list
 const loadTokenIcon = (el) => {
-  const somejtg = el.getAttribute('tokeniconurl')
-  console.log(somejtg)
   el.style.backgroundImage = el.getAttribute('tokeniconurl')
 }
 
