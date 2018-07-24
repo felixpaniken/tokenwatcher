@@ -190,9 +190,15 @@ const populateAllTokens = () => {
     tokenSymbol.className = 'tokenSymbol'
     tokenSymbol.innerHTML = allCoins[k].Symbol
 
+    // Setting up the button to add tokens to watch list
+    const buttonAddToken = document.createElement('div')
+    buttonAddToken.className = 'button secondary button-addToken'
+    buttonAddToken.innerHTML = 'Add Token'
+
     tokenDiv.appendChild(tokenIcon)
     tokenDiv.appendChild(tokenName)
     tokenDiv.appendChild(tokenSymbol)
+    tokenDiv.appendChild(buttonAddToken)
 
     document.querySelector('.allTokens-list').appendChild(tokenDiv)
     

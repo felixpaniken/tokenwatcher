@@ -20,7 +20,24 @@ h1 {
 	font-weight: 700;
 }
 
-/* Token container, holds token items */
+/* General buttons */
+.button {
+  background-color: blue;
+  color: #fff;
+  padding: 0 16px;
+  height: 40px;
+  max-width: 200px;
+  line-height: 40px;
+  border-radius: 40px;
+  margin-top: 16px;
+  display: none;
+}
+
+.button.secondary {
+  background-color: #fff;
+  border: 1px solid blue;
+  color: blue;
+}
 
 /* Header at the top */
 .header {
@@ -32,6 +49,7 @@ h1 {
   align-items: center;
 }
 
+/* Token container, holds token items */
 .tokenContainer {
   -webkit-overflow-scrolling: touch;
   /* height: calc(100vh - 160px) */
@@ -112,23 +130,6 @@ h1 {
   line-height: 2rem;
 }
 
-.button {
-  position: relative;
-  display: inline-block;
-  background-color: blue;
-  color: #fff;
-  padding: 0 16px;
-  height: 40px;
-  max-width: 200px;
-  line-height: 40px;
-  border-radius: 40px;
-  margin-top: 16px;
-  opacity: 0;
-  transform: translateY(20%);
-  transition: all 0.3s ease;
-  display: none; /* Just for now */
-}
-
 .button span {
   opacity: 1;
   transition: all 0.3s ease;
@@ -152,12 +153,22 @@ h1 {
 }
 
 .allTokens-container form {
-  padding: 12px;
+  /* Making room for close button */
+  width: calc(100% - 16px);
+  height: 64px;
+  background-color: var(--color-header);
+  margin-left: 8px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  border-radius: 999px;
 }
 
 .allTokens-container form input {
   border: 0px;
-  border-bottom: 1px solid var(--color-divider);
+  width: 100%;
+  height: 100%;
+  padding: 0 20px;
+  background-color: transparent;
 }
 .allTokens-container form input:focus {
   outline: none;
@@ -173,32 +184,16 @@ h1 {
 }
 
 .allTokenItem .allTokenItem-icon {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   margin-right: 8px;
   display: block;
   background-size: cover;
-  background-color: var(--color-divider);
   border-radius: 99px;
 }
 
 .allTokenItem .button-addToken {
-  background-color: blue;
-}
-
-/* Started states */
-.started .button {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Loading states */
-.loading .button {
-  max-width: 40px;
-}
-
-.loading .button span {
-  opacity: 0;
+  margin-left: auto;
 }
 
 /* Adding tokens */
