@@ -176,16 +176,23 @@ const populateAllTokens = () => {
     // Setting up token icon
     const tokenIcon = document.createElement('div')
     tokenIcon.className = 'allTokenItem-icon'
-    //tokenIcon.style.backgroundImage = `url('${baseImageUrl}${allCoins[k].ImageUrl}')`
-    // This is not good, OVER 9000 requests for the images etc, make it so that we get image if in viewport
+    // save this away to add as a data attribute on the div, for use later
+    const tokenIconURL = `url('${baseImageUrl}${allCoins[k].ImageUrl}')`
+    tokenIcon.setAttribute(`tokenIconURL`, `${tokenIconURL}`)
 
     // Setting up the name of the token
     const tokenName = document.createElement('span')
-    tokenName.className = 'allTokenName'
+    tokenName.className = 'tokenName'
     tokenName.innerHTML = allCoins[k].CoinName
+
+    // Setting up the token symbol
+    const tokenSymbol = document.createElement('span')
+    tokenSymbol.className = 'tokenSymbol'
+    tokenSymbol.innerHTML = allCoins[k].Symbol
 
     tokenDiv.appendChild(tokenIcon)
     tokenDiv.appendChild(tokenName)
+    tokenDiv.appendChild(tokenSymbol)
 
     document.querySelector('.allTokens-list').appendChild(tokenDiv)
     
@@ -322,8 +329,18 @@ allTokenInput.addEventListener('input', event => {
   } */
 })
 
+const loadTokenIcon = (el) => {
+  const somejtg = el.getAttribute('tokeniconurl')
+  console.log(somejtg)
+  el.style.backgroundImage = el.getAttribute('tokeniconurl')
+}
+
 // Function to enable all tokens picker
 const showAllCoins = () => {
+  inView('.allTokenItem-icon')
+      .on('enter', el =>{
+        loadTokenIcon(el)
+      });
   var animateAllCoinList = anime({
     targets: allTokensContainer,
     translateY: 0,
@@ -365,20 +382,23 @@ scrollContainer.addEventListener(
     const overscrollDistance = y - _startY
     // Activate custom pull-to-refresh effects when at the top of the container
     // and user is scrolling up.
-    //console.log(overscrollDistance)
     if (
       document.scrollingElement.scrollTop === 0 &&
       y > _startY &&
       !document.body.classList.contains('loading') &&
-      overscrollDistance > 200 &&
       !document.body.classList.contains('addingTokens')
     ) {
-      //console.log(overscrollDistance)
-      toggleLoading(true)
-      priceUpdateReady = true
+      console.log(overscrollDistance)
+      //document.querySelector('body').classList.add('addingTokens')
+      if (overscrollDistance > 200) {
+        toggleLoading(true)
+        priceUpdateReady = true
+      }
     } else if (document.scrollingElement.scrollTop >= bottomScroll && y < _startY && !document.body.classList.contains('addingTokens')) {
       //console.log('scrolling at bottom')
       let negativeOverscrollDistance = overscrollDistance * -1
+      console.log(negativeOverscrollDistance)
+      console.log(overscrollDistance)
       //console.log(negativeOverscrollDistance)
       var hintAllCoinList = anime({
         targets: allTokensContainer,
@@ -391,6 +411,8 @@ scrollContainer.addEventListener(
       if (negativeOverscrollDistance > 150) {
         console.log('get up')
         showAllCoinsReady = true
+      } else if (negativeOverscrollDistance < 150) {
+        showAllCoinsReady = false
       }
     }
   },
@@ -431,6 +453,11 @@ allTokensContainer.addEventListener(
     // Activate custom pull-to-refresh effects when at the top of the container
     // and user is scrolling up.
     //console.log(overscrollDistance)
+    console.log(overscrollDistance)
+    inView('.allTokenItem-icon')
+      .on('enter', el =>{
+        loadTokenIcon(el)
+      });
     if (
       allTokensContainer.scrollTop === 0 &&
       y > _startY &&
@@ -452,8 +479,11 @@ allTokensContainer.addEventListener(
       })
       hintAllCoinList.seek(hintAllCoinList.duration * ((overscrollDistance * 0.3) / 100));
       if (overscrollDistance > 150) {
-        console.log('get down')
+        //console.log('get down')
         showAllCoinsReady = false
+      } else if (overscrollDistance < 150) {
+        //console.log('stay up')
+        showAllCoinsReady = true
       }
 
     }
@@ -470,8 +500,5 @@ initialTokenSetup().then(() => {
     populateAllTokens()
   })
 })
-
-// For now I'm just populating the all coins list here but it makes sense in the future
-// to do it only when the user wants to add tokens
 
 
