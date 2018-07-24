@@ -42,16 +42,18 @@ h1 {
   flex: 0 0 40px;
   width: 40px;
   height: 40px;
-  margin-left: 8px;
-  font-size: 28px;
+  margin-left: 12px;
+  font-size: 20px;
   line-height: 40px;
   text-align: center;
+  background-color: var(--color-header);
+  border-radius: 999px;
 }
 .tokenItem.positiveChange .changeIndicator {
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 .tokenItem.negativeChange .changeIndicator {
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 /* Token items */
