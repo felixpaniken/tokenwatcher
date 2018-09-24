@@ -47,12 +47,10 @@ h1 {
 /* Header at the top */
 .header {
   display: flex;
-  height: 160px;
+  height: 72px;
   width: 100%;
-  background-color: var(--color-header);
   padding: 24px;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .actionbar {
@@ -76,9 +74,25 @@ h1 {
   transition: width 0.4s var(--easing-easeOutBack);
 }
 
+.settings-currencies {
+  margin-right: auto;
+}
+
+.settings-time {
+  margin-left: auto;
+}
+
 .actionbar .settings .settings-currencies, .actionbar .settings .settings-time {
   display: flex;
   height: 40px;
+}
+
+.settings-currencies .option:nth-of-type(1), .settings-time .option:nth-of-type(1) {
+  margin-right: auto;
+}
+
+.settings-currencies .option:nth-of-type(3), .settings-time .option:nth-of-type(3) {
+ margin-left: auto;
 }
 
 .actionbar .settings .divider {
@@ -99,8 +113,7 @@ h1 {
   justify-content: center;
   overflow: hidden;
   opacity: 0;
-  transition: width 0.4s ease, opacity 0.2s ease;
-  transition-delay: 0.2s;
+  transition: width 0.2s ease, opacity 0.6s ease;
 }
 
 /* Making sure the active time and currency is visible */
@@ -129,7 +142,7 @@ h1 {
 
 /* State for picking time */
 .actionbar .settings.set-time {
-  transition: width 1s ease;
+  transition-delay: 0s;
 }
 
 

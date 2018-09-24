@@ -496,6 +496,22 @@ allTokensContainer.addEventListener(
   {passive: true}
 )
 
+// Change settings like currency and time
+const settings = document.querySelector('.settings')
+const settingsTime = document.querySelector('.settings-time')
+const settingsCurrencies = document.querySelector('.settings-currencies')
+settingsTime.addEventListener('click', event => {
+  settings.classList.toggle('set-time')
+})
+settingsCurrencies.addEventListener('click', event => {
+  settings.classList.toggle('set-currency')
+})
+
+const buttonAllCoins = document.querySelector('.showAllTokens')
+buttonAllCoins.addEventListener('click', event => {
+  showAllCoins()
+})
+
 // This is the initial setup that runs when app starts
 initialTokenSetup().then(() => {
   updateTokenPrice().then(() => {
