@@ -3,6 +3,8 @@
 :root {
   --color-header: #f7f7f7;
   --color-divider: #eeeeee;
+  --color-interaction: blue;
+  --easing-easeOutBack: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 body {
@@ -22,21 +24,24 @@ h1 {
 
 /* General buttons */
 .button {
-  background-color: blue;
+  background-color: var(--color-interaction);
   color: #fff;
   padding: 0 16px;
   height: 40px;
   max-width: 200px;
   line-height: 40px;
   border-radius: 40px;
-  margin-top: 16px;
-  display: none;
 }
 
 .button.secondary {
   background-color: #fff;
-  border: 1px solid blue;
-  color: blue;
+  border: 1px solid var(--color-interaction);
+  color: var(--color-interaction);
+  font-size: 14px;
+  padding: 0 12px;
+  height: 36px;
+  line-height: 36px;
+  
 }
 
 /* Header at the top */
@@ -47,6 +52,94 @@ h1 {
   background-color: var(--color-header);
   padding: 24px;
   align-items: center;
+  margin-bottom: 16px;
+}
+
+.actionbar {
+  width: 100%;
+  padding: 0 8px;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 16px;
+}
+
+.actionbar .settings {
+  position: relative;
+  display: flex;
+  border: 1px solid var(--color-interaction);
+  height: 40px;
+  width: 114px;
+  border-radius: 40px;
+  padding: 0 8px;
+  color: var(--color-interaction);
+  margin-left: auto;
+  transition: width 0.4s var(--easing-easeOutBack);
+}
+
+.actionbar .settings .settings-currencies, .actionbar .settings .settings-time {
+  display: flex;
+  height: 40px;
+}
+
+.actionbar .settings .divider {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  width: 1px;
+  height: 16px;
+  background-color: var(--color-interaction);
+}
+
+/* The options for time and currency */
+.actionbar .settings .option {
+  display: flex;
+  height: 100%;
+  width: 0px;
+  line-height: 40px;
+  justify-content: center;
+  overflow: hidden;
+  opacity: 0;
+  transition: width 0.4s ease, opacity 0.2s ease;
+  transition-delay: 0.2s;
+}
+
+/* Making sure the active time and currency is visible */
+.actionbar .settings .settings-currencies .option.active, .actionbar .settings .settings-time .option.active {
+  opacity: 1;
+  width: 48px;
+}
+
+/* State for picking currency */
+.actionbar .settings.set-currency, .actionbar .settings.set-time {
+  width: 162px
+}
+
+.actionbar .settings.set-currency .settings-currencies {
+  width: 144px;
+}
+
+.actionbar .settings.set-currency .settings-currencies .option {
+  width: 48px;
+  opacity: 1;
+}
+
+.actionbar .settings.set-currency .settings-time .option, .actionbar .settings.set-currency .divider {
+  width: 0 !important;
+}
+
+/* State for picking time */
+.actionbar .settings.set-time {
+  transition: width 1s ease;
+}
+
+
+.actionbar .settings.set-time .settings-time .option {
+  width: 48px;
+  opacity: 1;
+}
+
+.actionbar .settings.set-time .settings-currencies .option, .actionbar .settings.set-time .divider {
+  width: 0 !important;
 }
 
 /* Token container, holds token items */

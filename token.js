@@ -193,7 +193,7 @@ const populateAllTokens = () => {
     // Setting up the button to add tokens to watch list
     const buttonAddToken = document.createElement('div')
     buttonAddToken.className = 'button secondary button-addToken'
-    buttonAddToken.innerHTML = 'Add Token'
+    buttonAddToken.innerHTML = 'Add'
 
     tokenDiv.appendChild(tokenIcon)
     tokenDiv.appendChild(tokenName)
