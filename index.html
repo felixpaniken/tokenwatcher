@@ -38,7 +38,13 @@
     </div>
     <div class="actionbar">
       <div class="button showAllTokens">
-        Add Tokens
+        <span>Add tokens</span>
+        <form>
+          <input type="text" name="tokenSearch" id="tokenSearch" placeholder="Search for tokens"><br>
+        </form>
+        <div class="hideAllTokens">
+            <span>Close</span>
+          </div>
       </div>
       <div class="settings">
         <div class="settings-currencies">
@@ -58,12 +64,6 @@
     </div>
     
     <div class="allTokens-container">
-        <form>
-          <input type="text" name="tokenSearch" id="tokenSearch" placeholder="Search for tokens"><br>
-        </form>
-        <div class="button hideAllTokens">
-            <span>Close</span>
-          </div>
         <ul class="allTokens-list">
         </ul>
     </div>

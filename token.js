@@ -147,15 +147,16 @@ const createTokenItem = coinList => {
     tokenNameSymbol.appendChild(tokenSymbol)
 
     // Append content spans to correct divs
-    tokenDivLeft.appendChild(tokenValue)
     tokenDivLeft.appendChild(tokenNameSymbol)
+    tokenDivRight.appendChild(tokenChangeIndicator)
     tokenDivRight.appendChild(tokenChange24)
+
 
     // Append content divs to the token item div
     newTokenDiv.appendChild(tokenIcon)
     newTokenDiv.appendChild(tokenDivLeft)
+    newTokenDiv.appendChild(tokenValue)
     newTokenDiv.appendChild(tokenDivRight)
-    newTokenDiv.appendChild(tokenChangeIndicator)
 
     // Insert the new token item into token container
     tokenContainer.appendChild(newTokenDiv)
@@ -398,26 +399,6 @@ scrollContainer.addEventListener(
         toggleLoading(true)
         priceUpdateReady = true
       }
-    } else if (document.scrollingElement.scrollTop >= bottomScroll && y < _startY && !document.body.classList.contains('addingTokens')) {
-      //console.log('scrolling at bottom')
-      let negativeOverscrollDistance = overscrollDistance * -1
-      //console.log(overscrollDistance)
-      //console.log(negativeOverscrollDistance)
-      /*
-      var hintAllCoinList = anime({
-        targets: allTokensContainer,
-        translateY: [viewportHeight, 560],
-        easing: 'easeOutExpo',
-        duration: 200,
-        autoplay: false
-      })
-      hintAllCoinList.seek(hintAllCoinList.duration * ((negativeOverscrollDistance * 0.3) / 100));
-      if (negativeOverscrollDistance > 150) {
-        console.log('get up')
-        showAllCoinsReady = true
-      } else if (negativeOverscrollDistance < 150) {
-        showAllCoinsReady = false
-      }*/
     }
   },
   {passive: true}
@@ -431,37 +412,10 @@ scrollContainer.addEventListener('touchend', e => {
       setTimeout(toggleLoading, 500)
       priceUpdateReady = false
     })
-  } if (showAllCoinsReady === true) {
-    //showAllCoins()
-  } if (showAllCoinsReady === false) {
-    hideAllCoins()
   }
 }, {passive: true}
 )
 
-// Touch, scroll and overscroll events for the all tokens container
-allTokensContainer.addEventListener(
-  'touchstart',
-  e => {
-    //_startY = e.touches[0].pageY
-    //bottomScroll = allTokensContainer.scrollHeight - window.innerHeight
-  },
-  {passive: true}
-)
-
-allTokensContainer.addEventListener(
-  'touchmove',
-  e => {
-    //const y = e.touches[0].pageY
-    //const overscrollDistance = y - _startY
-    //console.log(overscrollDistance)
-    inView('.allTokenItem-icon')
-      .on('enter', el =>{
-        loadTokenIcon(el)
-      });
-  },
-  {passive: true}
-)
 
 // Change settings like currency and time
 const settings = document.querySelector('.settings')
@@ -474,7 +428,7 @@ settingsCurrencies.addEventListener('click', event => {
   settings.classList.toggle('set-currency')
 })
 
-const buttonShowAllCoins = document.querySelector('.showAllTokens')
+const buttonShowAllCoins = document.querySelector('.showAllTokens > span')
 buttonShowAllCoins.addEventListener('click', event => {
   showAllCoins()
 })
@@ -483,11 +437,6 @@ const buttonHideAllCoins = document.querySelector('.hideAllTokens')
 buttonHideAllCoins.addEventListener('click', event => {
   hideAllCoins()
 })
-const doSomething = () => {
-  console.log('I do something')
-}
-const test1 = document.querySelectorAll('.allTokenItem-icon')
-inView('test1').on('enter', doSomething);
 
 // This is the initial setup that runs when app starts
 initialTokenSetup().then(() => {

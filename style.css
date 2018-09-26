@@ -41,7 +41,46 @@ h1 {
   padding: 0 12px;
   height: 36px;
   line-height: 36px;
-  
+}
+
+.button.showAllTokens {
+  display: flex;
+  position: relative;
+}
+
+.button.showAllTokens form {
+  display: none;
+  flex: 1 1 auto;
+  background-color: transparent;
+}
+
+.button.showAllTokens form input {
+  border: 0px;
+  width: 100%;
+  height: 100%;
+  padding: 0 20px;
+  background-color: transparent;
+  color: #fff;
+  text-align: center;
+}
+.button.showAllTokens form input:focus {
+  outline: none;
+}
+.button.showAllTokens form input::placeholder {
+  color: #fff;
+}
+
+.button.showAllTokens .hideAllTokens {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  z-index: 99;
+  background-image: url(images/icon-close.svg);
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 /* Header at the top */
@@ -49,7 +88,7 @@ h1 {
   display: flex;
   height: 72px;
   width: 100%;
-  padding: 24px;
+  padding: 0 12px;
   align-items: center;
 }
 
@@ -157,18 +196,22 @@ h1 {
 
 /* Token container, holds token items */
 .tokenContainer {
-  -webkit-overflow-scrolling: touch;
-  /* height: calc(100vh - 160px) */
-  padding-bottom: 48px;
+  margin: 0 8px;
+  height: auto;
+  padding-top: 0 4px;
+  /* max-height: calc(100vh - 144px); */
+  overflow: hidden;
+  border-radius: 32px;
+  border: 1px solid rgba(0,0,0,0.06);
+  margin-bottom: 16px;
 }
 
 .changeIndicator {
-  flex: 0 0 40px;
-  width: 40px;
-  height: 40px;
-  margin-left: 12px;
-  font-size: 20px;
-  line-height: 40px;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  line-height: 24px;
   text-align: center;
   background-color: var(--color-header);
   border-radius: 999px;
@@ -185,7 +228,7 @@ h1 {
   position: relative;
   display: flex;
   width: 100%;
-  height: 96px;
+  height: 56px;
   align-items: center;
   background-color: #fff;
   padding: 8px;
@@ -202,38 +245,54 @@ h1 {
   background-color: var(--color-header);
   background-size: contain;
   border-radius: 100%;
-  margin-left: 8px;
-  margin-right: 16px;
+  margin-right: 8px;
 }
 
 .tokenItem-leftContent {
 	flex:  1 1 auto;
   display:  flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+}
+
+.tokenItem-rightContent {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 .tokenValue {
-  font-size: 1.4rem;
+  position: absolute;
+  width: 100%;
+  padding-left: 40px;
+  text-align: center;
+  font-size: 1rem;
   line-height: 2rem;
-  font-weight: 500;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .tokenName,
 .tokenSymbol {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.25rem;
+  white-space: nowrap;
 }
 
 .tokenSymbol {
+  font-size: 0.7rem;
   opacity: 0.5;
   margin-left: 4px;
 }
 
 .tokenChange {
   font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 1rem;
   line-height: 2rem;
+  white-space: nowrap;
 }
 
 .button span {
@@ -243,41 +302,14 @@ h1 {
 
 /* All tokens list with all the tokens so user can add tokens to the list */
 .allTokens-container {
+  display: none;
   pointer-events: none;
-  position: fixed;
-  z-index: 9;
-  width: 100vw;
-  height: 100vh;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #fff;
-  transform: translateY(120vh);
-  overflow-y: scroll;
-  box-shadow: 0 8px 24px 0 rgba(0,0,0,12);
-}
-
-.allTokens-container form {
-  /* Making room for close button */
+  position: absolute;
+  z-index: -1;
   width: calc(100% - 16px);
-  height: 64px;
-  background-color: var(--color-header);
-  margin-left: 8px;
-  margin-top: 8px;
-  margin-bottom: 16px;
-  border-radius: 999px;
-}
-
-.allTokens-container form input {
-  border: 0px;
-  width: 100%;
-  height: 100%;
-  padding: 0 20px;
-  background-color: transparent;
-}
-.allTokens-container form input:focus {
-  outline: none;
+  margin: 0 8px;
+  border-radius: 32px;
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .allTokens-list .allTokenItem {
@@ -303,9 +335,33 @@ h1 {
 }
 
 /* Adding tokens */
-body.addingTokens {
-  overflow: hidden;
-}
+
 .addingTokens .allTokens-container {
   pointer-events: all;
+  display: block;
+}
+
+.addingTokens .tokenContainer {
+  display: none;
+}
+
+.addingTokens .settings {
+  display: none;
+}
+
+.addingTokens .button.showAllTokens {
+  width: 100%;
+  max-width: none;
+}
+
+.addingTokens .button.showAllTokens span {
+  display: none;
+}
+
+.addingTokens .button.showAllTokens form {
+  display: block;
+}
+
+.addingTokens .button.showAllTokens .hideAllTokens {
+  display: block;
 }
