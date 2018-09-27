@@ -66,6 +66,7 @@ const fetchTokenPrice = tokens => {
 const updateTokenPrice = () => {
   return fetchTokenPrice(myTokens).then(response => {
     const displayData = response.DISPLAY
+    console.log(displayData)
     Object.keys(displayData).forEach(k => {
       // Add new fresh prices to coinlist
       coinList[k].prices = {
@@ -140,22 +141,23 @@ const createTokenItem = coinList => {
     // USD change
     const tokenChange24 = document.createElement('span')
     tokenChange24.className = 'tokenChange'
-    tokenChange24.innerHTML = `${coinList[k].prices.changeUSD} %`.replace('$', '')
+    tokenChange24.innerHTML = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
 
     // Append content
     tokenNameSymbol.appendChild(tokenName)
     tokenNameSymbol.appendChild(tokenSymbol)
 
     // Append content spans to correct divs
-    tokenDivLeft.appendChild(tokenValue)
     tokenDivLeft.appendChild(tokenNameSymbol)
+    tokenDivRight.appendChild(tokenChangeIndicator)
     tokenDivRight.appendChild(tokenChange24)
+
 
     // Append content divs to the token item div
     newTokenDiv.appendChild(tokenIcon)
     newTokenDiv.appendChild(tokenDivLeft)
+    newTokenDiv.appendChild(tokenValue)
     newTokenDiv.appendChild(tokenDivRight)
-    newTokenDiv.appendChild(tokenChangeIndicator)
 
     // Insert the new token item into token container
     tokenContainer.appendChild(newTokenDiv)
@@ -190,9 +192,15 @@ const populateAllTokens = () => {
     tokenSymbol.className = 'tokenSymbol'
     tokenSymbol.innerHTML = allCoins[k].Symbol
 
+    // Setting up the button to add tokens to watch list
+    const buttonAddToken = document.createElement('div')
+    buttonAddToken.className = 'button secondary button-addToken'
+    buttonAddToken.innerHTML = 'Add'
+
     tokenDiv.appendChild(tokenIcon)
     tokenDiv.appendChild(tokenName)
     tokenDiv.appendChild(tokenSymbol)
+    tokenDiv.appendChild(buttonAddToken)
 
     document.querySelector('.allTokens-list').appendChild(tokenDiv)
     
@@ -230,17 +238,17 @@ const updateTokenItem = myTokens => {
     oldValue = newValue
     targetToken.querySelector('.tokenValue').innerHTML = newValue
     let oldChange = targetToken.querySelector('.tokenChange').innerHTML
-    let newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '')
+    let newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
     let rawChange = coinList[k].prices.changeUSD
     console.log(`Value changes are, ${oldChange} - ${newChange}`)
     if (rawChange > 0) {
       targetToken.classList.remove('negativeChange')
       targetToken.classList.add('positiveChange')
-      targetToken.querySelector('.changeIndicator').innerHTML = '👍'
+      //targetToken.querySelector('.changeIndicator').innerHTML = '👍'
     } else if (rawChange < 0) {
       targetToken.classList.add('negativeChange')
       targetToken.classList.remove('positiveCHange')
-      targetToken.querySelector('.changeIndicator').innerHTML = '👎'
+      //targetToken.querySelector('.changeIndicator').innerHTML = '👎'
     }
     targetToken.querySelector('.tokenChange').innerHTML = newChange
     oldChange = newChange
@@ -336,10 +344,7 @@ const loadTokenIcon = (el) => {
 
 // Function to enable all tokens picker
 const showAllCoins = () => {
-  inView('.allTokenItem-icon')
-      .on('enter', el =>{
-        loadTokenIcon(el)
-      });
+  
   var animateAllCoinList = anime({
     targets: allTokensContainer,
     translateY: 0,
@@ -347,6 +352,7 @@ const showAllCoins = () => {
     duration: 800
   })
   document.body.classList.add('addingTokens')
+  document.body.classList.add('loading')
 }
 
 const hideAllCoins = () => {
@@ -357,6 +363,7 @@ const hideAllCoins = () => {
     duration: 800
   })
   document.body.classList.remove('addingTokens')
+  document.body.classList.remove('loading')
 }
 
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
@@ -393,26 +400,6 @@ scrollContainer.addEventListener(
         toggleLoading(true)
         priceUpdateReady = true
       }
-    } else if (document.scrollingElement.scrollTop >= bottomScroll && y < _startY && !document.body.classList.contains('addingTokens')) {
-      //console.log('scrolling at bottom')
-      let negativeOverscrollDistance = overscrollDistance * -1
-      console.log(negativeOverscrollDistance)
-      console.log(overscrollDistance)
-      //console.log(negativeOverscrollDistance)
-      var hintAllCoinList = anime({
-        targets: allTokensContainer,
-        translateY: [viewportHeight, 560],
-        easing: 'easeOutExpo',
-        duration: 200,
-        autoplay: false
-      })
-      hintAllCoinList.seek(hintAllCoinList.duration * ((negativeOverscrollDistance * 0.3) / 100));
-      if (negativeOverscrollDistance > 150) {
-        console.log('get up')
-        showAllCoinsReady = true
-      } else if (negativeOverscrollDistance < 150) {
-        showAllCoinsReady = false
-      }
     }
   },
   {passive: true}
@@ -426,69 +413,31 @@ scrollContainer.addEventListener('touchend', e => {
       setTimeout(toggleLoading, 500)
       priceUpdateReady = false
     })
-  } if (showAllCoinsReady === true) {
-    showAllCoins()
-  } if (showAllCoinsReady === false) {
-    hideAllCoins()
   }
 }, {passive: true}
 )
 
-// Touch, scroll and overscroll events for the all tokens container
-allTokensContainer.addEventListener(
-  'touchstart',
-  e => {
-    _startY = e.touches[0].pageY
-    bottomScroll = allTokensContainer.scrollHeight - window.innerHeight
-  },
-  {passive: true}
-)
 
-allTokensContainer.addEventListener(
-  'touchmove',
-  e => {
-    const y = e.touches[0].pageY
-    const overscrollDistance = y - _startY
-    // Activate custom pull-to-refresh effects when at the top of the container
-    // and user is scrolling up.
-    //console.log(overscrollDistance)
-    console.log(overscrollDistance)
-    inView('.allTokenItem-icon')
-      .on('enter', el =>{
-        loadTokenIcon(el)
-      });
-    if (
-      allTokensContainer.scrollTop === 0 &&
-      y > _startY &&
-      !document.body.classList.contains('loading') &&
-      document.body.classList.contains('addingTokens')
-    ) {
-      // To detect if scrolling at top while adding tokens list is open (this should close open token list)
-      // But instead of looking at body we need to look at adding token container
-      // Also look scrolling of body while this is up
-      // Should probably create a function that controls the adding tokens now :)
-      console.log('upp scroll while adding token')
-      // Animating the all coin list container
-      var hintAllCoinList = anime({
-        targets: allTokensContainer,
-        translateY: [0, overscrollDistance],
-        easing: 'easeOutExpo',
-        duration: 1000,
-        autoplay: false
-      })
-      hintAllCoinList.seek(hintAllCoinList.duration * ((overscrollDistance * 0.3) / 100));
-      if (overscrollDistance > 150) {
-        //console.log('get down')
-        showAllCoinsReady = false
-      } else if (overscrollDistance < 150) {
-        //console.log('stay up')
-        showAllCoinsReady = true
-      }
+// Change settings like currency and time
+const settings = document.querySelector('.settings')
+const settingsTime = document.querySelector('.settings-time')
+const settingsCurrencies = document.querySelector('.settings-currencies')
+settingsTime.addEventListener('click', event => {
+  settings.classList.toggle('set-time')
+})
+settingsCurrencies.addEventListener('click', event => {
+  settings.classList.toggle('set-currency')
+})
 
-    }
-  },
-  {passive: true}
-)
+const buttonShowAllCoins = document.querySelector('.showAllTokens > span')
+buttonShowAllCoins.addEventListener('click', event => {
+  showAllCoins()
+})
+
+const buttonHideAllCoins = document.querySelector('.hideAllTokens')
+buttonHideAllCoins.addEventListener('click', event => {
+  hideAllCoins()
+})
 
 // This is the initial setup that runs when app starts
 initialTokenSetup().then(() => {

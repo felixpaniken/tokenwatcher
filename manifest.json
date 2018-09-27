@@ -1,6 +1,6 @@
 {
-  "short_name": "Token",
-  "name": "Token Watcher",
+  "short_name": "Mynt",
+  "name": "Mynt - Token tracker",
   "icons": [
     {
       "src": "/images/icon-180.png",
@@ -26,5 +26,5 @@
   "start_url": "index.html",
   "background_color": "#fff",
   "display": "standalone",
-  "theme_color": "#000"
+  "theme_color": "#fff"
 }
