@@ -14,7 +14,6 @@ body {
 	background-color: #ffffff;
 	color: #333333;
   overscroll-behavior: contain;
-  min-height: 100vh;
 }
 
 h1 {
@@ -196,31 +195,32 @@ h1 {
 
 /* Token container, holds token items */
 .tokenContainer {
-  margin: 0 8px;
-  height: auto;
-  padding-top: 0 4px;
-  /* max-height: calc(100vh - 144px); */
-  overflow: hidden;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 32px;
-  border: 1px solid rgba(0,0,0,0.06);
+  height: auto;
+  z-index: 8;
+  max-height: calc(100vh - 144px);
+  margin: 0 8px;
+  padding: 4px 0;
   margin-bottom: 16px;
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .changeIndicator {
   flex: 0 0 24px;
   width: 24px;
   height: 24px;
-  font-size: 12px;
-  line-height: 24px;
   text-align: center;
-  background-color: var(--color-header);
-  border-radius: 999px;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 .tokenItem.positiveChange .changeIndicator {
-  padding-bottom: 2px;
+  background-image: url(images/icon-changePositive.svg)
 }
 .tokenItem.negativeChange .changeIndicator {
-  padding-top: 2px;
+  background-image: url(images/icon-changeNegative.svg)
 }
 
 /* Token items */
@@ -232,7 +232,7 @@ h1 {
   align-items: center;
   background-color: #fff;
   padding: 8px;
-  border-bottom: 1px solid var(--color-divider);
+  /*border-bottom: 1px solid var(--color-divider);*/
   opacity: 0;
   animation: fadeInUp 0.4s ease;
   animation-fill-mode: forwards;
@@ -306,7 +306,12 @@ h1 {
   pointer-events: none;
   position: absolute;
   z-index: -1;
+  height: auto;
+  min-height: 56px;
   width: calc(100% - 16px);
+  max-height: calc(100vh - 144px);
+  overflow-y: auto;
+  overflow-x: hidden;
   margin: 0 8px;
   border-radius: 32px;
   border: 1px solid rgba(0,0,0,0.06);
@@ -316,7 +321,7 @@ h1 {
   height: 56px;
   width: 100%;
   padding: 8px;
-  border-bottom: 1px solid var(--color-divider);
+  /*border-bottom: 1px solid var(--color-divider);*/
   display: flex;
   align-items: center;
 }

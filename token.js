@@ -66,6 +66,7 @@ const fetchTokenPrice = tokens => {
 const updateTokenPrice = () => {
   return fetchTokenPrice(myTokens).then(response => {
     const displayData = response.DISPLAY
+    console.log(displayData)
     Object.keys(displayData).forEach(k => {
       // Add new fresh prices to coinlist
       coinList[k].prices = {
@@ -140,7 +141,7 @@ const createTokenItem = coinList => {
     // USD change
     const tokenChange24 = document.createElement('span')
     tokenChange24.className = 'tokenChange'
-    tokenChange24.innerHTML = `${coinList[k].prices.changeUSD} %`.replace('$', '')
+    tokenChange24.innerHTML = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
 
     // Append content
     tokenNameSymbol.appendChild(tokenName)
@@ -237,17 +238,17 @@ const updateTokenItem = myTokens => {
     oldValue = newValue
     targetToken.querySelector('.tokenValue').innerHTML = newValue
     let oldChange = targetToken.querySelector('.tokenChange').innerHTML
-    let newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '')
+    let newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
     let rawChange = coinList[k].prices.changeUSD
     console.log(`Value changes are, ${oldChange} - ${newChange}`)
     if (rawChange > 0) {
       targetToken.classList.remove('negativeChange')
       targetToken.classList.add('positiveChange')
-      targetToken.querySelector('.changeIndicator').innerHTML = '👍'
+      //targetToken.querySelector('.changeIndicator').innerHTML = '👍'
     } else if (rawChange < 0) {
       targetToken.classList.add('negativeChange')
       targetToken.classList.remove('positiveCHange')
-      targetToken.querySelector('.changeIndicator').innerHTML = '👎'
+      //targetToken.querySelector('.changeIndicator').innerHTML = '👎'
     }
     targetToken.querySelector('.tokenChange').innerHTML = newChange
     oldChange = newChange
