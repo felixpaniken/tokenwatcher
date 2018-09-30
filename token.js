@@ -10,7 +10,7 @@ var showAllCoinsReady = false
 // All coins fetched
 var allCoins = {}
 
-// Array for users tokens
+// Array for users tokens (to be saved?)
 const myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
 
 // Container for our tokens
@@ -29,7 +29,7 @@ var viewportHeight = window.innerHeight
 const initialTokenSetup = () => {
   // Toggle it here cause I don't know how return works...
   toggleStarting(true)
-  console.log('fetching coinlist')
+  console.log('fetching all coinlist from cryptocompare')
   return fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
     .then(response => {
       return response.json()
@@ -38,11 +38,12 @@ const initialTokenSetup = () => {
       //console.log(data)
       baseImageUrl = data.BaseImageUrl
       allCoins = data.Data
+      // Building a complex array (with prices) from myTokens
       myTokens.forEach(k => {
         coinList[k] = {
-          coinName: data.Data[k].CoinName,
-          coinSymbol: data.Data[k].Symbol,
-          tokenIcon: `https://www.cryptocompare.com${data.Data[k].ImageUrl}`
+          coinName: allCoins[k].CoinName,
+          coinSymbol: allCoins[k].Symbol,
+          tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
         }
       })
     })
@@ -174,6 +175,9 @@ const populateAllTokens = () => {
     const tokenDiv = document.createElement('div')
     // Giving token div a class
     tokenDiv.className = 'allTokenItem'
+    // If k symbol exists in my tokens then
+    // Add class selected 
+    // Or something like that where I can see which ones are added already
 
     // Setting up token icon
     const tokenIcon = document.createElement('div')
@@ -196,6 +200,7 @@ const populateAllTokens = () => {
     const buttonAddToken = document.createElement('div')
     buttonAddToken.className = 'button secondary button-addToken'
     buttonAddToken.innerHTML = 'Add'
+    buttonAddToken.setAttribute(`tokenSymbol`, `${allCoins[k].Symbol}`)
 
     tokenDiv.appendChild(tokenIcon)
     tokenDiv.appendChild(tokenName)
@@ -429,15 +434,44 @@ settingsCurrencies.addEventListener('click', event => {
   settings.classList.toggle('set-currency')
 })
 
+// Show all tokens list
 const buttonShowAllCoins = document.querySelector('.showAllTokens > span')
 buttonShowAllCoins.addEventListener('click', event => {
   showAllCoins()
 })
 
+// Hide all tokens list
 const buttonHideAllCoins = document.querySelector('.hideAllTokens')
 buttonHideAllCoins.addEventListener('click', event => {
   hideAllCoins()
 })
+
+// Add token from all tokens list to MyTokens
+// Should be a function when I got it working good
+const setupAddTokenButton = () => {
+  console.log('button set up')
+  const buttonAddToken = document.querySelectorAll('.button-addToken')
+  buttonAddToken.forEach(function(thisButton) {
+    thisButton.addEventListener('click', event => {
+      myTokens.push(thisButton.getAttribute('tokensymbol'))
+      console.log(myTokens)
+      myTokens.forEach(function(k) {
+        coinList[k] = {
+          coinName: allCoins[k].CoinName,
+          coinSymbol: allCoins[k].Symbol,
+          tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
+        }
+      })
+      document.querySelector('.tokenContainer').innerHTML = ''
+      updateTokenPrice().then(() => {
+        createTokenItem(coinList)
+        updateTokenItem(myTokens)
+        toggleStarting(false)
+      })
+    })
+  })
+}
+
 
 // This is the initial setup that runs when app starts
 initialTokenSetup().then(() => {
@@ -446,6 +480,7 @@ initialTokenSetup().then(() => {
     updateTokenItem(myTokens)
     toggleStarting(false)
     populateAllTokens()
+    setupAddTokenButton()
   })
 })
 
