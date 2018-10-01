@@ -175,9 +175,6 @@ const populateAllTokens = () => {
     const tokenDiv = document.createElement('div')
     // Giving token div a class
     tokenDiv.className = 'allTokenItem'
-    // If k symbol exists in my tokens then
-    // Add class selected 
-    // Or something like that where I can see which ones are added already
 
     // Setting up token icon
     const tokenIcon = document.createElement('div')
@@ -195,6 +192,11 @@ const populateAllTokens = () => {
     const tokenSymbol = document.createElement('span')
     tokenSymbol.className = 'tokenSymbol'
     tokenSymbol.innerHTML = allCoins[k].Symbol
+    // Check if the token is already saved in my tokens list
+    if (myTokens.includes(allCoins[k].Symbol)) {
+      // if in my tokens list, add class savedToken so we can identify tokens already saved to list
+      tokenDiv.classList.add('savedToken')
+    }
 
     // Setting up the button to add tokens to watch list
     const buttonAddToken = document.createElement('div')
@@ -453,21 +455,28 @@ const setupAddTokenButton = () => {
   const buttonAddToken = document.querySelectorAll('.button-addToken')
   buttonAddToken.forEach(function(thisButton) {
     thisButton.addEventListener('click', event => {
-      myTokens.push(thisButton.getAttribute('tokensymbol'))
-      console.log(myTokens)
-      myTokens.forEach(function(k) {
-        coinList[k] = {
-          coinName: allCoins[k].CoinName,
-          coinSymbol: allCoins[k].Symbol,
-          tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
-        }
-      })
-      document.querySelector('.tokenContainer').innerHTML = ''
-      updateTokenPrice().then(() => {
-        createTokenItem(coinList)
-        updateTokenItem(myTokens)
-        toggleStarting(false)
-      })
+      if (myTokens.includes(thisButton.getAttribute('tokensymbol'))) {
+        console.log('Token already saved')
+        // OK obviously it couldn't be this easy to remove.. need to use:
+        // https://davidwalsh.name/remove-item-array-javascript
+        //myTokens.remove(thisButton.getAttribute('tokensymbol'))
+        console.log(myTokens)
+      } else {
+        myTokens.push(thisButton.getAttribute('tokensymbol'))
+        myTokens.forEach(function(k) {
+          coinList[k] = {
+            coinName: allCoins[k].CoinName,
+            coinSymbol: allCoins[k].Symbol,
+            tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
+          }
+        })
+        document.querySelector('.tokenContainer').innerHTML = ''
+        updateTokenPrice().then(() => {
+          createTokenItem(coinList)
+          updateTokenItem(myTokens)
+          toggleStarting(false)
+        })
+      }
     })
   })
 }
