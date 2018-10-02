@@ -215,6 +215,7 @@ h1 {
   text-align: center;
   background-repeat: no-repeat;
   background-position: center;
+  background-image: url(images/icon-changeNeutral.svg)
 }
 .tokenItem.positiveChange .changeIndicator {
   background-image: url(images/icon-changePositive.svg)
@@ -337,6 +338,19 @@ h1 {
 
 .allTokenItem .button-addToken {
   margin-left: auto;
+}
+
+.allTokenItem .button-removeToken {
+  display: none;
+  margin-left: auto;
+}
+
+.allTokenItem.savedToken .button-removeToken {
+  display: block;
+}
+
+.allTokenItem.savedToken .button-addToken {
+  display: none;
 }
 
 /* Adding tokens */

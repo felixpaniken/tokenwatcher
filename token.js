@@ -89,7 +89,7 @@ const createTokenItem = coinList => {
     console.log(`Creating token item for ${coinList[k].coinName}`)
     // This feels old-school, fix
     index = index + 1
-    console.log(`Fixa oldschool index räknaren`)
+    //console.log(`Fixa oldschool index räknaren`)
 
     // Setting up the new token Div
     const newTokenDiv = document.createElement('div')
@@ -175,6 +175,8 @@ const populateAllTokens = () => {
     const tokenDiv = document.createElement('div')
     // Giving token div a class
     tokenDiv.className = 'allTokenItem'
+    // Set the token symbol as a data attribute
+    tokenDiv.setAttribute(`tokenSymbol`, `${allCoins[k].Symbol}`)
 
     // Setting up token icon
     const tokenIcon = document.createElement('div')
@@ -202,12 +204,16 @@ const populateAllTokens = () => {
     const buttonAddToken = document.createElement('div')
     buttonAddToken.className = 'button secondary button-addToken'
     buttonAddToken.innerHTML = 'Add'
-    buttonAddToken.setAttribute(`tokenSymbol`, `${allCoins[k].Symbol}`)
+    // Setting up the button to remove tokens to watch list
+    const buttonRemoveToken = document.createElement('div')
+    buttonRemoveToken.className = 'button secondary button-removeToken'
+    buttonRemoveToken.innerHTML = 'Remove'
 
     tokenDiv.appendChild(tokenIcon)
     tokenDiv.appendChild(tokenName)
     tokenDiv.appendChild(tokenSymbol)
     tokenDiv.appendChild(buttonAddToken)
+    tokenDiv.appendChild(buttonRemoveToken)
 
     document.querySelector('.allTokens-list').appendChild(tokenDiv)
     
@@ -247,7 +253,7 @@ const updateTokenItem = myTokens => {
     let oldChange = targetToken.querySelector('.tokenChange').innerHTML
     let newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
     let rawChange = coinList[k].prices.changeUSD
-    console.log(`Value changes are, ${oldChange} - ${newChange}`)
+    //console.log(`Value changes are, ${oldChange} - ${newChange}`)
     if (rawChange > 0) {
       targetToken.classList.remove('negativeChange')
       targetToken.classList.add('positiveChange')
@@ -376,7 +382,7 @@ const hideAllCoins = () => {
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
 // https://developers.google.com/web/updates/2017/11/overscroll-behavior
 let _startY
-const scrollContainer = document.querySelector('body')
+const scrollContainer = tokenContainer
 var bottomScroll = 0
 
 scrollContainer.addEventListener(
@@ -451,18 +457,22 @@ buttonHideAllCoins.addEventListener('click', event => {
 // Add token from all tokens list to MyTokens
 // Should be a function when I got it working good
 const setupAddTokenButton = () => {
-  console.log('button set up')
-  const buttonAddToken = document.querySelectorAll('.button-addToken')
-  buttonAddToken.forEach(function(thisButton) {
+  const buttonAllToken = document.querySelectorAll('.allTokenItem > .button')
+  buttonAllToken.forEach(function(thisButton) {
     thisButton.addEventListener('click', event => {
-      if (myTokens.includes(thisButton.getAttribute('tokensymbol'))) {
+      if (myTokens.includes(thisButton.parentNode.getAttribute('tokensymbol'))) {
+        // Remove a token from my tokens list
         console.log('Token already saved')
-        // OK obviously it couldn't be this easy to remove.. need to use:
+        // Remove a token from my token thanks to:
         // https://davidwalsh.name/remove-item-array-javascript
-        //myTokens.remove(thisButton.getAttribute('tokensymbol'))
-        console.log(myTokens)
+        var i = myTokens.indexOf(thisButton.parentNode.getAttribute('tokensymbol'));
+        if(i != -1) {
+          myTokens.splice(i, 1);
+        }
+        thisButton.parentNode.classList.remove('savedToken')
       } else {
-        myTokens.push(thisButton.getAttribute('tokensymbol'))
+        // Add a token to my tokens list
+        myTokens.push(thisButton.parentNode.getAttribute('tokensymbol'))
         myTokens.forEach(function(k) {
           coinList[k] = {
             coinName: allCoins[k].CoinName,
@@ -470,13 +480,15 @@ const setupAddTokenButton = () => {
             tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
           }
         })
-        document.querySelector('.tokenContainer').innerHTML = ''
-        updateTokenPrice().then(() => {
-          createTokenItem(coinList)
-          updateTokenItem(myTokens)
-          toggleStarting(false)
-        })
+        thisButton.parentNode.classList.add('savedToken')
       }
+      // Rebuild the token container and fill it with the modified my token list
+      document.querySelector('.tokenContainer').innerHTML = ''
+      updateTokenPrice().then(() => {
+        createTokenItem(coinList)
+        updateTokenItem(myTokens)
+        toggleStarting(false)
+      })
     })
   })
 }
