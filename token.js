@@ -11,7 +11,7 @@ var showAllCoinsReady = false
 var allCoins = {}
 
 // Array for users tokens (to be saved?)
-const myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
+var myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
 
 // Container for our tokens
 const tokenContainer = document.querySelector('.tokenContainer')
@@ -29,6 +29,8 @@ var viewportHeight = window.innerHeight
 const initialTokenSetup = () => {
   // Toggle it here cause I don't know how return works...
   toggleStarting(true)
+  // Check for saved tokens saved in local storage
+  loadUserTokens()
   console.log('fetching all coinlist from cryptocompare')
   return fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
     .then(response => {
@@ -48,6 +50,28 @@ const initialTokenSetup = () => {
       })
     })
 }
+
+// Function that updates the users token list in local storage
+const saveUserTokens = () => {
+  console.log('Saving user tokens to local storage')
+  // Put tokens from array in local storage but as a string
+  localStorage.setItem('userTokens', JSON.stringify(myTokens))
+}
+
+const loadUserTokens = () => {
+  console.log('Checking for saved tokens in local storage')
+  var savedTokens = localStorage.getItem('userTokens')
+  if (savedTokens) {
+    console.log('Found saved tokens in local storage')
+    // If we found saved tokens locally we set mytokens to be the saved ones
+    myTokens = JSON.parse(savedTokens);
+  } else {
+    console.log('No saved tokens in local storage')
+    // If we did not find any saved tokens we set up the defaults
+    myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
+  }
+}
+
 
 // Function that fetches prices for the tokens requested and returns the response data as JSON
 const fetchTokenPrice = tokens => {
@@ -483,6 +507,7 @@ const setupAddTokenButton = () => {
         thisButton.parentNode.classList.add('savedToken')
       }
       // Rebuild the token container and fill it with the modified my token list
+      saveUserTokens()
       document.querySelector('.tokenContainer').innerHTML = ''
       updateTokenPrice().then(() => {
         createTokenItem(coinList)
