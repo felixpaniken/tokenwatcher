@@ -13,6 +13,9 @@ var allCoins = {}
 // Array for users tokens (to be saved?)
 var myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
 
+// Preferred Currency
+var prefCurrency = 'USD'
+
 // Container for our tokens
 const tokenContainer = document.querySelector('.tokenContainer')
 
@@ -25,12 +28,22 @@ var baseImageUrl = ""
 // Use everywhere viewport height, used to hide the all coins container
 var viewportHeight = window.innerHeight
 
+// Settings container
+const settings = document.querySelector('.settings')
+
+// Currency in settings
+const settingsCurrencies = document.querySelector('.settings-currencies')
+
+// Each currency option in currency settings
+const optionCurrency = document.querySelectorAll('.settings-currencies > .option')
+
 // Get all coin data
 const initialTokenSetup = () => {
   // Toggle it here cause I don't know how return works...
   toggleStarting(true)
   // Check for saved tokens saved in local storage
   loadUserTokens()
+  loadUserSettings()
   console.log('fetching all coinlist from cryptocompare')
   return fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
     .then(response => {
@@ -56,8 +69,11 @@ const saveUserTokens = () => {
   console.log('Saving user tokens to local storage')
   // Put tokens from array in local storage but as a string
   localStorage.setItem('userTokens', JSON.stringify(myTokens))
+  // Save the users preferred currency
+  localStorage.setItem('userCurrency', prefCurrency)
 }
 
+// See if the user has any saved tokens
 const loadUserTokens = () => {
   console.log('Checking for saved tokens in local storage')
   var savedTokens = localStorage.getItem('userTokens')
@@ -69,6 +85,24 @@ const loadUserTokens = () => {
     console.log('No saved tokens in local storage')
     // If we did not find any saved tokens we set up the defaults
     myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
+  }
+}
+
+// See if the user has a saved preference for currency 
+// This might be extended to other settings (like theme) later
+const loadUserSettings = () => {
+  console.log('Checking for user settings in local storage')
+  var savedCurrency = localStorage.userCurrency
+  if (savedCurrency) {
+    console.log(`Found saved currency (${savedCurrency}) in local storage`)
+    prefCurrency = savedCurrency
+    optionCurrency.forEach((option) => {
+      if (prefCurrency === option.dataset.currency) {
+        option.classList.add('active')
+      } else {
+        option.classList.remove('active')
+      }
+    })
   }
 }
 
@@ -253,7 +287,17 @@ const updateTokenItem = myTokens => {
     // Get the old value
     let oldValue = targetToken.querySelector('.tokenValue').innerHTML
     // Get the new value
-    let newValue = coinList[k].prices.priceUSD
+    // Check which currency to use
+    if (prefCurrency === 'USD' ) {
+      console.log(`Setting ${k} value with USD`)
+      var newValue = coinList[k].prices.priceUSD
+    } else if (prefCurrency === 'EUR') {
+      console.log(`Setting ${k} value with EUR`)
+      var newValue = coinList[k].prices.priceEUR
+    } else if (prefCurrency === 'BTC') {
+      console.log(`Setting ${k} value with BTC`)
+      var newValue = coinList[k].prices.priceBTC
+    }
     // Compare the values so we can make a nice NEW VALUE animation
     if (oldValue == newValue) {
       // No change
@@ -274,10 +318,25 @@ const updateTokenItem = myTokens => {
     }
     oldValue = newValue
     targetToken.querySelector('.tokenValue').innerHTML = newValue
-    let oldChange = targetToken.querySelector('.tokenChange').innerHTML
-    let newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
-    let rawChange = coinList[k].prices.changeUSD
-    //console.log(`Value changes are, ${oldChange} - ${newChange}`)
+    // Set the change in value
+    // Check which currency to use
+    if (prefCurrency === 'USD') {
+      var oldChange = targetToken.querySelector('.tokenChange').innerHTML
+      var newChange = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
+      var rawChange = coinList[k].prices.changeUSD
+      //console.log(`Value changes are, ${oldChange} - ${newChange}`)
+    } else if (prefCurrency === 'EUR') {
+      var oldChange = targetToken.querySelector('.tokenChange').innerHTML
+      var newChange = `${coinList[k].prices.changeEUR} %`.replace('€', '').replace('-', '')
+      var rawChange = coinList[k].prices.changeEUR
+      //console.log(`Value changes are, ${oldChange} - ${newChange}`)
+    } else if (prefCurrency === 'BTC') {
+      var oldChange = targetToken.querySelector('.tokenChange').innerHTML
+      var newChange = `${coinList[k].prices.changeBTC} %`.replace('Ƀ', '').replace('-', '')
+      var rawChange = coinList[k].prices.changeBTC
+      //console.log(`Value changes are, ${oldChange} - ${newChange}`)
+    }
+
     if (rawChange > 0) {
       targetToken.classList.remove('negativeChange')
       targetToken.classList.add('positiveChange')
@@ -355,23 +414,6 @@ allTokenInput.addEventListener('input', event => {
         li[i].style.display = "none";
     }
   }
-
-  /*
-  if (filter.length > 1) {
-    for (i = 0; i < li.length; i++) {
-      a = li[i].getElementsByTagName("span")[0];
-      if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-          li[i].style.display = "";
-      } else {
-          li[i].style.display = "none";
-      }
-    }
-  } else {
-    console.log(filter)
-    // li.style.display = ""; y no work?
-    const ynowork = document.querySelectorAll('.allTokenItem')
-    ynowork.style.display = "";
-  } */
 })
 
 // Load icons in the all tokens list
@@ -456,14 +498,21 @@ scrollContainer.addEventListener('touchend', e => {
 
 
 // Change settings like currency and time
-const settings = document.querySelector('.settings')
-const settingsTime = document.querySelector('.settings-time')
-const settingsCurrencies = document.querySelector('.settings-currencies')
-settingsTime.addEventListener('click', event => {
-  settings.classList.toggle('set-time')
-})
 settingsCurrencies.addEventListener('click', event => {
   settings.classList.toggle('set-currency')
+})
+
+optionCurrency.forEach((option) => {
+  option.addEventListener('click', event => {
+    if (option.classList.contains('active')) {
+      option.classList.remove('active')
+    } else {
+      option.classList.add('active')
+      prefCurrency = option.dataset.currency
+      saveUserTokens()
+      updateTokenItem(myTokens)
+    }
+  })
 })
 
 // Show all tokens list
@@ -527,6 +576,7 @@ initialTokenSetup().then(() => {
     toggleStarting(false)
     populateAllTokens()
     setupAddTokenButton()
+    saveUserTokens()
   })
 })
 
