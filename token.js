@@ -158,7 +158,7 @@ const createTokenItem = coinList => {
 
     // Setting a animation delay on object according to which order it is
     // This needs to change to only apply for the first animation when the items come in
-    const delay = index * 100
+    const delay = index * 50
     newTokenDiv.style.animationDelay = `${delay}ms`
 
     // Setting up left column of token div
