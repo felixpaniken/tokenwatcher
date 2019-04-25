@@ -81,6 +81,30 @@ h1 {
   background-repeat: no-repeat;
   background-position: center;
 }
+/* Loader showing when the app is loading*/
+.loader {
+  display: none;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  margin-top: -16px;
+  margin-left: -16px;
+  border-radius: 99px;
+  position: absolute;
+  height: 32px;
+  width: 32px;
+  background-color: var(--color-interaction);
+  z-index:99;
+  animation: startingSpinner 0.3s infinite alternate;
+}
+
+body.starting .loader {
+  display: block;
+}
+
+body.starting .tokenContainer {
+  display: none;
+}
 
 /* Header at the top */
 .header {
