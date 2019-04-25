@@ -423,7 +423,9 @@ const loadTokenIcon = (el) => {
 
 // Function to enable all tokens picker
 const showAllCoins = () => {
-  
+  // Instead of having separate containers, 
+  // Empty out the container, put a loading spinner, populate container with tokens
+  // Maybe not ever show all tokens, only show "trending" and then more if the user searches
   var animateAllCoinList = anime({
     targets: allTokensContainer,
     translateY: 0,
@@ -431,7 +433,6 @@ const showAllCoins = () => {
     duration: 800
   })
   document.body.classList.add('addingTokens')
-  document.body.classList.add('loading')
 }
 
 const hideAllCoins = () => {
@@ -442,7 +443,6 @@ const hideAllCoins = () => {
     duration: 800
   })
   document.body.classList.remove('addingTokens')
-  document.body.classList.remove('loading')
 }
 
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
@@ -518,6 +518,7 @@ optionCurrency.forEach((option) => {
 // Show all tokens list
 const buttonShowAllCoins = document.querySelector('.showAllTokens > span')
 buttonShowAllCoins.addEventListener('click', event => {
+  populateAllTokens()
   showAllCoins()
 })
 
@@ -574,7 +575,7 @@ initialTokenSetup().then(() => {
     createTokenItem(coinList)
     updateTokenItem(myTokens)
     toggleStarting(false)
-    populateAllTokens()
+    //populateAllTokens() Better to only do this when the user wants to add a new token
     setupAddTokenButton()
     saveUserTokens()
   })
