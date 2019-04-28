@@ -39,11 +39,12 @@ const optionCurrency = document.querySelectorAll('.settings-currencies > .option
 
 // Get all coin data
 const initialTokenSetup = () => {
-  // Toggle it here cause I don't know how return works...
-  toggleStarting(true)
   // Check for saved tokens saved in local storage
   loadUserTokens()
+  // Check for saved user settings in local storage
   loadUserSettings()
+  /*
+  Getting all coins and saving them in array
   console.log('fetching all coinlist from cryptocompare')
   return fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
     .then(response => {
@@ -61,7 +62,7 @@ const initialTokenSetup = () => {
           tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
         }
       })
-    })
+    })*/
 }
 
 // Function that updates the users token list in local storage
@@ -82,7 +83,7 @@ const loadUserTokens = () => {
     // If we found saved tokens locally we set mytokens to be the saved ones
     myTokens = JSON.parse(savedTokens);
   } else {
-    console.log('No saved tokens in local storage')
+    console.log('No saved tokens in local storage, setting up standard list')
     // If we did not find any saved tokens we set up the defaults
     myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
   }
@@ -121,11 +122,43 @@ const fetchTokenPrice = tokens => {
     })
 }
 
+// Function that fetches prices AND MORE for the tokens requested and returns the response data as JSON
+const fetchTokenData = tokens => {
+  console.log(`fetching data of ${tokens}`)
+  return fetch(
+    `https://min-api.cryptocompare.com/data/coin/generalinfo?fsyms=${tokens}&tsym=USD`
+    //`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${tokens}&tsyms=USD,EUR,BTC`
+  )
+    .then(response => {
+      return response.json()
+    })
+    .then(data => {
+      //console.log(data)
+      baseImageUrl = data.BaseImageUrl
+      allCoins = data.Data
+      // Building a complex array (with data returned) from myTokens
+      var i = -1;
+      myTokens.forEach(k => {
+        //console.log(k)
+        ++i
+        //console.log(i)
+        coinList[k] = {
+          coinName: allCoins[i].CoinInfo.FullName,
+          coinSymbol: allCoins[i].CoinInfo.Name,
+          tokenIcon: `https://www.cryptocompare.com${allCoins[i].CoinInfo.ImageUrl}`
+        }
+      })
+    })
+    .catch(error => {
+      console.log(error.message)
+    })
+}
+
 // Handle the JSON data coming from the fetch function and put the prices into object
 const updateTokenPrice = () => {
   return fetchTokenPrice(myTokens).then(response => {
     const displayData = response.DISPLAY
-    console.log(displayData)
+    //console.log(displayData)
     Object.keys(displayData).forEach(k => {
       // Add new fresh prices to coinlist
       coinList[k].prices = {
@@ -147,7 +180,6 @@ const createTokenItem = coinList => {
     console.log(`Creating token item for ${coinList[k].coinName}`)
     // This feels old-school, fix
     index = index + 1
-    //console.log(`Fixa oldschool index räknaren`)
 
     // Setting up the new token Div
     const newTokenDiv = document.createElement('div')
@@ -562,21 +594,22 @@ const setupAddTokenButton = () => {
       updateTokenPrice().then(() => {
         createTokenItem(coinList)
         updateTokenItem(myTokens)
-        toggleStarting(false)
       })
     })
   })
 }
 
 // This is the initial setup that runs when app starts
-initialTokenSetup().then(() => {
+toggleStarting(true)
+initialTokenSetup()
+fetchTokenData(myTokens).then(() => {
   updateTokenPrice().then(() => {
     createTokenItem(coinList)
     updateTokenItem(myTokens)
-    toggleStarting(false)
     //populateAllTokens() Better to only do this when the user wants to add a new token
     setupAddTokenButton()
     saveUserTokens()
+    toggleStarting(false)
   })
 })
 
