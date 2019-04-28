@@ -568,7 +568,6 @@ const setupAddTokenButton = () => {
   })
 }
 
-
 // This is the initial setup that runs when app starts
 initialTokenSetup().then(() => {
   updateTokenPrice().then(() => {
@@ -582,3 +581,8 @@ initialTokenSetup().then(() => {
 })
 
 
+// Check if app looses focus and fetch a price update when focus is regained
+const handleVisibilityChange = () => {
+  //console.log(document.visibilityState);
+}
+document.addEventListener("visibilitychange", handleVisibilityChange, false);
