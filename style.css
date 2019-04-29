@@ -308,15 +308,18 @@ body.starting .tokenContainer {
 
 .allTokenItem .button-removeToken {
   display: none;
+  pointer-events: none;
   margin-left: auto;
 }
 
 .allTokenItem.savedToken .button-removeToken {
   display: block;
+  pointer-events: all;
 }
 
 .allTokenItem.savedToken .button-addToken {
   display: none;
+  pointer-events: none;
 }
 
 /* Adding tokens */

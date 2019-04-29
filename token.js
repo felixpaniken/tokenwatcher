@@ -1,4 +1,4 @@
-// Global variable with the coinlist
+// Holds the users current tokens similar to myTokens but on XXXX format
 var coinList = {}
 
 // To see if conditions are met before updating prices
@@ -9,6 +9,12 @@ var showAllCoinsReady = false
 
 // All coins fetched
 var allCoins = {}
+
+// List of all tokens fetched
+var allTokens = {}
+
+// Control to see if we fetched all tokens this session
+var allTokensFetched = false
 
 // Array for users tokens (to be saved?)
 var myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
@@ -39,29 +45,34 @@ const optionCurrency = document.querySelectorAll('.settings-currencies > .option
 
 // Get all coin data
 const initialTokenSetup = () => {
-  // Toggle it here cause I don't know how return works...
-  toggleStarting(true)
   // Check for saved tokens saved in local storage
   loadUserTokens()
+  // Check for saved user settings in local storage
   loadUserSettings()
+}
+
+const getAllTokens = () => {
+  // Check if we have already fetched all tokens this session
+  if (allTokensFetched === true) {
+     // We have fetched = return the data fetched earlier
+    console.log('already fetched')
+    return Promise.resolve(allTokens)
+  } else if (allTokensFetched === false) {
+    // This is the first time we fetch this sessions
+    console.log('not fetched')
+      //Getting all coins and saving them in array
+  allTokensFetched = true
   console.log('fetching all coinlist from cryptocompare')
   return fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
     .then(response => {
       return response.json()
     })
     .then(data => {
-      //console.log(data)
       baseImageUrl = data.BaseImageUrl
-      allCoins = data.Data
-      // Building a complex array (with prices) from myTokens
-      myTokens.forEach(k => {
-        coinList[k] = {
-          coinName: allCoins[k].CoinName,
-          coinSymbol: allCoins[k].Symbol,
-          tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
-        }
-      })
+      allTokens = data.Data
     })
+  }
+
 }
 
 // Function that updates the users token list in local storage
@@ -82,7 +93,7 @@ const loadUserTokens = () => {
     // If we found saved tokens locally we set mytokens to be the saved ones
     myTokens = JSON.parse(savedTokens);
   } else {
-    console.log('No saved tokens in local storage')
+    console.log('No saved tokens in local storage, setting up standard list')
     // If we did not find any saved tokens we set up the defaults
     myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
   }
@@ -121,11 +132,43 @@ const fetchTokenPrice = tokens => {
     })
 }
 
+// Function that fetches prices AND MORE for the tokens requested and returns the response data as JSON
+const fetchTokenData = tokens => {
+  console.log(`fetching data of ${tokens}`)
+  return fetch(
+    `https://min-api.cryptocompare.com/data/coin/generalinfo?fsyms=${tokens}&tsym=USD`
+    //`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${tokens}&tsyms=USD,EUR,BTC`
+  )
+    .then(response => {
+      return response.json()
+    })
+    .then(data => {
+      //console.log(data)
+      baseImageUrl = data.BaseImageUrl
+      allCoins = data.Data
+      // Building a complex array (with data returned) from myTokens
+      var i = -1;
+      myTokens.forEach(k => {
+        //console.log(k)
+        ++i
+        //console.log(i)
+        coinList[k] = {
+          coinName: allCoins[i].CoinInfo.FullName,
+          coinSymbol: allCoins[i].CoinInfo.Name,
+          tokenIcon: `https://www.cryptocompare.com${allCoins[i].CoinInfo.ImageUrl}`
+        }
+      })
+    })
+    .catch(error => {
+      console.log(error.message)
+    })
+}
+
 // Handle the JSON data coming from the fetch function and put the prices into object
 const updateTokenPrice = () => {
   return fetchTokenPrice(myTokens).then(response => {
     const displayData = response.DISPLAY
-    console.log(displayData)
+    //console.log(displayData)
     Object.keys(displayData).forEach(k => {
       // Add new fresh prices to coinlist
       coinList[k].prices = {
@@ -144,10 +187,9 @@ const createTokenItem = coinList => {
   // I know there is a better way to do this
   let index = -1
   myTokens.forEach(k => {
-    console.log(`Creating token item for ${coinList[k].coinName}`)
+    //console.log(`Creating token item for ${coinList[k].coinName}`)
     // This feels old-school, fix
     index = index + 1
-    //console.log(`Fixa oldschool index räknaren`)
 
     // Setting up the new token Div
     const newTokenDiv = document.createElement('div')
@@ -228,32 +270,32 @@ const populateAllTokens = () => {
   // Apparently this is bad performing
   // https://jsperf.com/objdir
   // Might try to optimise
-  Object.keys(allCoins).forEach(k => {
+  Object.keys(allTokens).forEach(k => {
     // Setting up the container
     const tokenDiv = document.createElement('div')
     // Giving token div a class
     tokenDiv.className = 'allTokenItem'
     // Set the token symbol as a data attribute
-    tokenDiv.setAttribute(`tokenSymbol`, `${allCoins[k].Symbol}`)
+    tokenDiv.setAttribute(`tokenSymbol`, `${allTokens[k].Symbol}`)
 
     // Setting up token icon
     const tokenIcon = document.createElement('div')
     tokenIcon.className = 'allTokenItem-icon'
     // save this away to add as a data attribute on the div, for use later
-    const tokenIconURL = `url('${baseImageUrl}${allCoins[k].ImageUrl}')`
+    const tokenIconURL = `url('${baseImageUrl}${allTokens[k].ImageUrl}')`
     tokenIcon.setAttribute(`tokenIconURL`, `${tokenIconURL}`)
 
     // Setting up the name of the token
     const tokenName = document.createElement('span')
     tokenName.className = 'tokenName'
-    tokenName.innerHTML = allCoins[k].CoinName
+    tokenName.innerHTML = allTokens[k].CoinName
 
     // Setting up the token symbol
     const tokenSymbol = document.createElement('span')
     tokenSymbol.className = 'tokenSymbol'
-    tokenSymbol.innerHTML = allCoins[k].Symbol
+    tokenSymbol.innerHTML = allTokens[k].Symbol
     // Check if the token is already saved in my tokens list
-    if (myTokens.includes(allCoins[k].Symbol)) {
+    if (myTokens.includes(allTokens[k].Symbol)) {
       // if in my tokens list, add class savedToken so we can identify tokens already saved to list
       tokenDiv.classList.add('savedToken')
     }
@@ -289,13 +331,13 @@ const updateTokenItem = myTokens => {
     // Get the new value
     // Check which currency to use
     if (prefCurrency === 'USD' ) {
-      console.log(`Setting ${k} value with USD`)
+      //console.log(`Setting ${k} value with USD`)
       var newValue = coinList[k].prices.priceUSD
     } else if (prefCurrency === 'EUR') {
-      console.log(`Setting ${k} value with EUR`)
+      //console.log(`Setting ${k} value with EUR`)
       var newValue = coinList[k].prices.priceEUR
     } else if (prefCurrency === 'BTC') {
-      console.log(`Setting ${k} value with BTC`)
+      //console.log(`Setting ${k} value with BTC`)
       var newValue = coinList[k].prices.priceBTC
     }
     // Compare the values so we can make a nice NEW VALUE animation
@@ -393,6 +435,11 @@ const toggleStarting = state => {
     document.body.classList.add('started')
     console.log('Started')
   }
+}
+
+// Clears out the token container, preparing it for new content
+const clearTokenContainer = () => {
+  document.querySelector('.tokenContainer').innerHTML = ''
 }
 
 // Handle input in the token search field 
@@ -496,7 +543,6 @@ scrollContainer.addEventListener('touchend', e => {
 }, {passive: true}
 )
 
-
 // Change settings like currency and time
 settingsCurrencies.addEventListener('click', event => {
   settings.classList.toggle('set-currency')
@@ -515,68 +561,90 @@ optionCurrency.forEach((option) => {
   })
 })
 
+
 // Show all tokens list
 const buttonShowAllCoins = document.querySelector('.showAllTokens > span')
+// Setting up a variable to save myTokens for later check if change
+var oldMyTokens = {}
+// Listen for click on the show all coins button
 buttonShowAllCoins.addEventListener('click', event => {
-  populateAllTokens()
-  showAllCoins()
+  // Copy myTokens so we know if it has changed later
+  oldMyTokens = myTokens.slice()
+  console.log(oldMyTokens)
+  // Fetch and handle the list from cryptocompare of all tokens
+  getAllTokens().then(() => {
+    // Create the HTML
+    populateAllTokens()
+    // Hook up the add remove buttons in the all tokens list 
+    setupAddTokenButton()
+    // Show the window
+    showAllCoins()
+  })
 })
 
 // Hide all tokens list
 const buttonHideAllCoins = document.querySelector('.hideAllTokens')
 buttonHideAllCoins.addEventListener('click', event => {
+  if (oldMyTokens === myTokens) {
+    console.log("myTokens didn't change")
+  } else {
+    console.log("myTokens changed!")
+    saveUserTokens()
+    clearTokenContainer()
+    fetchTokenData(myTokens).then(() => {
+      updateTokenPrice().then(() => {
+        createTokenItem(coinList)
+        updateTokenItem(myTokens)
+      })
+    })
+  }
   hideAllCoins()
 })
 
 // Add token from all tokens list to MyTokens
 // Should be a function when I got it working good
+var addRemoveSetupDone = false
 const setupAddTokenButton = () => {
-  const buttonAllToken = document.querySelectorAll('.allTokenItem > .button')
-  buttonAllToken.forEach(function(thisButton) {
-    thisButton.addEventListener('click', event => {
-      if (myTokens.includes(thisButton.parentNode.getAttribute('tokensymbol'))) {
-        // Remove a token from my tokens list
-        console.log('Token already saved')
-        // Remove a token from my token thanks to:
-        // https://davidwalsh.name/remove-item-array-javascript
-        var i = myTokens.indexOf(thisButton.parentNode.getAttribute('tokensymbol'));
-        if(i != -1) {
-          myTokens.splice(i, 1);
-        }
-        thisButton.parentNode.classList.remove('savedToken')
-      } else {
-        // Add a token to my tokens list
-        myTokens.push(thisButton.parentNode.getAttribute('tokensymbol'))
-        myTokens.forEach(function(k) {
-          coinList[k] = {
-            coinName: allCoins[k].CoinName,
-            coinSymbol: allCoins[k].Symbol,
-            tokenIcon: `https://www.cryptocompare.com${allCoins[k].ImageUrl}`
+  if (addRemoveSetupDone === false) {
+    addRemoveSetupDone = true
+    const buttonAllToken = document.querySelectorAll('.allTokenItem > .button')
+    buttonAllToken.forEach(function(thisButton) {
+      thisButton.addEventListener('click', event => {
+        var symbolOfToken = thisButton.parentNode.getAttribute('tokensymbol')
+        if (myTokens.includes(symbolOfToken)) {
+          // Remove a token from my tokens list
+          console.log(`Removing ${symbolOfToken} from myTokens`)
+          // Remove a token from my token thanks to:
+          // https://davidwalsh.name/remove-item-array-javascript
+          var i = myTokens.indexOf(symbolOfToken);
+          if(i != -1) {
+            myTokens.splice(i, 1);
           }
-        })
-        thisButton.parentNode.classList.add('savedToken')
-      }
-      // Rebuild the token container and fill it with the modified my token list
-      saveUserTokens()
-      document.querySelector('.tokenContainer').innerHTML = ''
-      updateTokenPrice().then(() => {
-        createTokenItem(coinList)
-        updateTokenItem(myTokens)
-        toggleStarting(false)
+          thisButton.parentNode.classList.remove('savedToken')
+        } else {
+          // Add a token to my tokens list
+          console.log(`Adding ${symbolOfToken} to myTokens`)
+          myTokens.push(thisButton.parentNode.getAttribute('tokensymbol'))  
+          thisButton.parentNode.classList.add('savedToken')
+        }
       })
     })
-  })
+  } else if (addRemoveSetupDone === true ) {
+    console.log("Button setup already done")
+  }
 }
 
 // This is the initial setup that runs when app starts
-initialTokenSetup().then(() => {
+toggleStarting(true)
+initialTokenSetup()
+fetchTokenData(myTokens).then(() => {
   updateTokenPrice().then(() => {
     createTokenItem(coinList)
     updateTokenItem(myTokens)
-    toggleStarting(false)
     //populateAllTokens() Better to only do this when the user wants to add a new token
-    setupAddTokenButton()
+    //setupAddTokenButton()
     saveUserTokens()
+    toggleStarting(false)
   })
 })
 
