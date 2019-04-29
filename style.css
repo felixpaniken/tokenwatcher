@@ -1,9 +1,12 @@
 @import url('https://fonts.googleapis.com/css?family=Lato:400,700');
 
 :root {
+  --color-background: #ffffff;
+  --color-text-primary: #333333;
   --color-header: #f7f7f7;
   --color-divider: #eeeeee;
-  --color-interaction: blue;
+  --color-container-border: rgba(0, 0, 0, 0.06);
+  --color-interaction: #0047FF;
   --easing-easeOutBack: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -11,8 +14,8 @@ body {
 	font-family: 'Lato', sans-serif;
 	font-size: 16px;
 	line-height: 1.5;
-	background-color: #ffffff;
-	color: #333333;
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
   overscroll-behavior: contain;
 }
 
@@ -33,7 +36,7 @@ h1 {
 }
 
 .button.secondary {
-  background-color: #fff;
+  background-color: var(--color-background);
   border: 1px solid var(--color-interaction);
   color: var(--color-interaction);
   font-size: 14px;
@@ -171,7 +174,7 @@ body.starting .tokenContainer {
   margin: 0 8px;
   padding: 4px 0;
   margin-bottom: 16px;
-  border: 2px solid rgb(243, 243, 243);
+  border: 2px solid var(--color-container-border);
 }
 
 .changeIndicator {
@@ -197,7 +200,7 @@ body.starting .tokenContainer {
   width: 100%;
   height: 56px;
   align-items: center;
-  background-color: #fff;
+  background-color: var(--color-background);
   padding: 8px;
   /*border-bottom: 1px solid var(--color-divider);*/
   opacity: 0;
@@ -281,14 +284,13 @@ body.starting .tokenContainer {
   overflow-x: hidden;
   margin: 0 8px;
   border-radius: 32px;
-  border: 1px solid rgba(0,0,0,0.06);
+  border: 1px solid var(--color-container-border);
 }
 
 .allTokens-list .allTokenItem {
   height: 56px;
   width: 100%;
   padding: 8px;
-  /*border-bottom: 1px solid var(--color-divider);*/
   display: flex;
   align-items: center;
 }
