@@ -355,3 +355,54 @@ body.starting .tokenContainer {
 .addingTokens .button.showAllTokens .hideAllTokens {
   display: block;
 }
+
+
+
+/* QUICK and DIRTY big screen support. Will look into creating the HTML better in the first place */
+@media (min-width: 600px) {
+  .tokenContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 1rem;
+    border: none;
+  }
+  .tokenContainer .tokenItem {
+    height: 256px;
+    margin-bottom: 16px;
+    border-radius: 28px;
+    border: 2px solid var(--color-container-border);
+    padding: 16px;
+    flex-direction: column;
+  }
+  .tokenItem-icon {
+    align-self: flex-start;
+    height: 32px;
+    width: 32px;
+    position: absolute;
+  }
+  .tokenItem-leftContent {
+    align-self: flex-start;
+    margin-left: 48px;
+    flex: 0 0 32px;
+  }
+  .tokenItem-leftContent .tokenName {
+    font-size: 1.1rem;
+  }
+  .tokenItem-leftContent .tokenSymbol {
+    font-size: 1rem;
+  }
+  .tokenValue {
+    position: relative;
+    right: auto;
+    top: 50%;
+    transform: translateY(-100%);
+    font-size: 2rem;
+    line-height: 4rem;
+  }
+  .changeIndicator {
+    margin-right: 4px;
+  }
+  .tokenChange {
+    font-size: 1.2rem;
+  }
+}
