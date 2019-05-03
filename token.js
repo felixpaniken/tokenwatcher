@@ -43,6 +43,44 @@ const settingsCurrencies = document.querySelector('.settings-currencies')
 // Each currency option in currency settings
 const optionCurrency = document.querySelectorAll('.settings-currencies > .option')
 
+// The users current theme
+var currentTheme = 'light'
+
+// Setting up light theme (default)
+var themeLight = {
+  themeName: 'light',
+  colorBackground: '#ffffff',
+  colorTextPrimary: '#333333',
+  colorHeader: '#f7f7f7',
+  colorDivider: '#eeeeee',
+  colorContainerBorder: 'rgba(0, 0, 0, 0.06)',
+  colorInteraction: '#0047FF',
+}
+
+// Setting up dark theme (default)
+var themeDark = {  
+  themeName: 'dark',
+  colorBackground: '#000000',
+  colorTextPrimary: '#ffffff',
+  colorHeader: '#f7f7f7',
+  colorDivider: '#eeeeee',
+  colorContainerBorder: 'rgba(0, 0, 0, 0.06)',
+  colorInteraction: '#0047FF',
+}
+
+// Function to apply a theme by setting the correct css variables
+const applyTheme = (theme) => {
+  // For each property in the theme 
+  for (var property in theme) {
+    //console.log(property)
+    //console.log(theme[property])
+    document.documentElement.style.setProperty(`--${property}`, theme[property]);
+  }
+  // Set current theme to the theme just applied
+  currentTheme = theme.themeName
+  console.log(`Theme set to ${theme.themeName}`)
+}
+
 // Get all coin data
 const initialTokenSetup = () => {
   // Check for saved tokens saved in local storage
@@ -76,12 +114,14 @@ const getAllTokens = () => {
 }
 
 // Function that updates the users token list in local storage
-const saveUserTokens = () => {
+const saveUserTokens = () => { //Rename it saves more than tokens
   console.log('Saving user tokens to local storage')
   // Put tokens from array in local storage but as a string
   localStorage.setItem('userTokens', JSON.stringify(myTokens))
   // Save the users preferred currency
   localStorage.setItem('userCurrency', prefCurrency)
+  // Save the users current theme
+  localStorage.setItem('userTheme', currentTheme)
 }
 
 // See if the user has any saved tokens
@@ -114,6 +154,12 @@ const loadUserSettings = () => {
         option.classList.remove('active')
       }
     })
+  }
+  var savedTheme = localStorage.userTheme
+  if (savedTheme === currentTheme) {
+    console.log('Theme matches, not switching')
+  } else if (savedTheme != currentTheme) {
+    applyTheme(savedTheme)
   }
 }
 
