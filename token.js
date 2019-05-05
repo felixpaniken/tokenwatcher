@@ -634,6 +634,96 @@ const setupAddTokenButton = () => {
   }
 }
 
+// Get hourly OHLCV data for token
+const getHourlyOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histohour?fsym=${token}&tsym=${prefCurrency}&limit=5`
+  ).then(response => {
+    return response.json()
+  })
+}
+
+// Creates and attaches a chart to a token item
+Chart.defaults.scale.gridLines.display = false;
+const createChart = (token, chartLabels, chartData) => {
+  var targetToken = document.querySelector(`[data-token='${token}']`)
+  const targetTokenChart = document.createElement('canvas')
+  targetTokenChart.className = 'tokenChart'
+  targetTokenChart.innerHTML = ''
+  targetToken.appendChild(targetTokenChart)
+
+  var ctx = targetTokenChart.getContext('2d');
+  var chart = new Chart(ctx, {
+      // The type of chart we want to create
+      type: 'line',
+  
+      // The data for our dataset
+      data: {
+          labels: chartLabels,
+          datasets: [{
+              label: 'My First dataset',
+              backgroundColor: '#0047ff',
+              borderColor: '#0047ff',
+              pointRadius: 0,
+              data: chartData
+          }]
+      },
+  
+      // Configuration options go here
+      options: {
+        layout: {
+          padding: {
+            top: 20,
+          },
+        },
+        legend: {
+          display: false,
+        },
+        gridLines: {
+          display: false,
+        },
+        scales: {
+          xAxes: [{
+            display: false
+          }],
+          yAxes: [{
+            display: false
+          }],
+        },
+        plugins: {
+          // Change options for ALL labels of THIS CHART
+          datalabels: {
+            color: '#0047ff',
+            align: 'end',
+            font: {
+              weight: 'bold',
+            },
+          },
+        },
+      }
+  });
+}
+
+// Build a complete chart for a token
+const buildChart = (token) => {
+  // Get hourly prices, this needs to be more flexible so we can get monthly etc instead of hourly
+  getHourlyOHLCV(token).then(response => {
+    // Array where our labels will go
+    var chartLabels = []
+    // Array where the data points will go
+    var chartData = []
+    // For each key in the object we got back from the fetch
+    Object.keys(response.Data).forEach(k => {
+      // Push a timestamp into chart labels
+      chartLabels.push(response.Data[k].time)
+      // Push a closing value into
+      chartData.push(response.Data[k].close)
+    })
+    // Create the chart in a canvas document with the labels and data we requested
+    createChart(token, chartLabels, chartData)
+  })
+}
+
 // This is the initial setup that runs when app starts
 toggleStarting(true)
 initialTokenSetup()

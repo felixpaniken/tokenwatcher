@@ -270,6 +270,12 @@ body.starting .tokenContainer {
   transition: all 0.3s ease;
 }
 
+.tokenChart {
+  margin-top: 40px;
+  border-radius: 20px;
+  border-bottom: 30px solid var(--color-interaction);
+}
+
 /* All tokens list with all the tokens so user can add tokens to the list */
 .allTokens-container {
   display: none;
@@ -324,6 +330,7 @@ body.starting .tokenContainer {
   pointer-events: none;
 }
 
+
 /* Adding tokens */
 
 .addingTokens .allTokens-container {
@@ -356,8 +363,6 @@ body.starting .tokenContainer {
   display: block;
 }
 
-
-
 /* QUICK and DIRTY big screen support. Will look into creating the HTML better in the first place */
 @media (min-width: 600px) {
   .tokenContainer {
@@ -367,7 +372,8 @@ body.starting .tokenContainer {
     border: none;
   }
   .tokenContainer .tokenItem {
-    height: 256px;
+    min-height: 256px;
+    height: auto;
     margin-bottom: 16px;
     border-radius: 28px;
     border: 2px solid var(--color-container-border);
