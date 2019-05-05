@@ -724,6 +724,13 @@ const buildChart = (token) => {
   })
 }
 
+// Build charts for all of the users tokens
+const buildChartAll = () => {
+  myTokens.forEach((token) => {
+    buildChart(token)
+  })
+}
+
 // This is the initial setup that runs when app starts
 toggleStarting(true)
 initialTokenSetup()
