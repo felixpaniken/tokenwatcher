@@ -646,11 +646,19 @@ const getHourlyOHLCV = (token) => {
 // Creates and attaches a chart to a token item
 Chart.defaults.scale.gridLines.display = false;
 const createChart = (token, chartLabels, chartData) => {
+  // Find the token that will get chart attached
   var targetToken = document.querySelector(`[data-token='${token}']`)
+  // Create chart element
   const targetTokenChart = document.createElement('canvas')
   targetTokenChart.className = 'tokenChart'
   targetTokenChart.innerHTML = ''
+  // Attach chart element to target token
   targetToken.appendChild(targetTokenChart)
+
+  // Find the lowest value in the data set for the chart
+  var lowestDataValue = Math.min(...chartData)
+  // Create a smaller value for use as as floor in chart
+  var aestheticMin = lowestDataValue*0.98
 
   var ctx = targetTokenChart.getContext('2d');
   var chart = new Chart(ctx, {
@@ -673,7 +681,7 @@ const createChart = (token, chartLabels, chartData) => {
       options: {
         layout: {
           padding: {
-            top: 20,
+            top: 40,
           },
         },
         legend: {
@@ -687,7 +695,10 @@ const createChart = (token, chartLabels, chartData) => {
             display: false
           }],
           yAxes: [{
-            display: false
+            display: false,
+            ticks: {
+              suggestedMin: aestheticMin,
+            },
           }],
         },
         plugins: {
@@ -695,6 +706,7 @@ const createChart = (token, chartLabels, chartData) => {
           datalabels: {
             color: '#0047ff',
             align: 'end',
+            offset: 20,
             font: {
               weight: 'bold',
             },

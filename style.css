@@ -271,9 +271,7 @@ body.starting .tokenContainer {
 }
 
 .tokenChart {
-  margin-top: 40px;
   border-radius: 20px;
-  border-bottom: 30px solid var(--color-interaction);
 }
 
 /* All tokens list with all the tokens so user can add tokens to the list */
