@@ -193,10 +193,14 @@ const createTokenItem = coinList => {
 
     // Setting up the new token Div
     const newTokenDiv = document.createElement('div')
-
     // Giving token div a class
     newTokenDiv.className = 'tokenItem'
     newTokenDiv.dataset.token = coinList[k].coinSymbol
+
+
+    // Setting up a container for data, so we later can have a chart underneath
+    const newTokenData = document.createElement('div')
+    newTokenData.className = 'tokenItem-data'
 
     // Setting a animation delay on object according to which order it is
     // This needs to change to only apply for the first animation when the items come in
@@ -254,11 +258,14 @@ const createTokenItem = coinList => {
     tokenDivRight.appendChild(tokenChange24)
 
 
-    // Append content divs to the token item div
-    newTokenDiv.appendChild(tokenIcon)
-    newTokenDiv.appendChild(tokenDivLeft)
-    newTokenDiv.appendChild(tokenValue)
-    newTokenDiv.appendChild(tokenDivRight)
+    // Append content divs to the token data div
+    newTokenData.appendChild(tokenIcon)
+    newTokenData.appendChild(tokenDivLeft)
+    newTokenData.appendChild(tokenValue)
+    newTokenData.appendChild(tokenDivRight)
+
+    // Append the data div to the token item
+    newTokenDiv.appendChild(newTokenData)
 
     // Insert the new token item into token container
     tokenContainer.appendChild(newTokenDiv)
@@ -637,7 +644,7 @@ const setupAddTokenButton = () => {
 // Get hourly OHLCV data for token
 const getHourlyOHLCV = (token) => {
   return fetch(
-    `https://min-api.cryptocompare.com/data/histohour?fsym=${token}&tsym=${prefCurrency}&limit=5`
+    `https://min-api.cryptocompare.com/data/histohour?fsym=${token}&tsym=${prefCurrency}&limit=23`
   ).then(response => {
     return response.json()
   })
@@ -704,11 +711,15 @@ const createChart = (token, chartLabels, chartData) => {
         plugins: {
           // Change options for ALL labels of THIS CHART
           datalabels: {
-            color: '#0047ff',
+            color: 'rgba(0,0,0,0.5)',
             align: 'end',
+            textAlign: 'end',
             offset: 20,
             font: {
               weight: 'bold',
+            },
+            formatter: function(value, context) {
+              return chartData[context.dataIndex] + '\n' + chartLabels[context.dataIndex];
             },
           },
         },
