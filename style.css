@@ -276,6 +276,12 @@ body.starting .tokenContainer {
   transition: all 0.3s ease;
 }
 
+.tokenChartContainer {
+  display: none;
+  position: relative;
+  height: 56px;
+}
+
 .tokenChart {
   border-radius: 20px;
 }
@@ -382,7 +388,7 @@ body.starting .tokenContainer {
     overflow: hidden;
   }
   .tokenContainer .tokenItem .tokenItem-data {
-    min-height: 256px;
+    height: auto;
     padding: 16px;
     flex-direction: column;
     justify-content: space-between;
@@ -398,12 +404,17 @@ body.starting .tokenContainer {
     margin-left: 48px;
     align-items: flex-start;
     line-height: 32px;
+    margin-bottom: 2rem;
   }
   .tokenItem-leftContent .tokenName {
     font-size: 1.1rem;
   }
   .tokenItem-leftContent .tokenSymbol {
     font-size: 1rem;
+  }
+  .tokenChartContainer {
+    display: block;
+    height: 6rem;
   }
   .tokenValue {
     position: relative;
@@ -414,6 +425,7 @@ body.starting .tokenContainer {
   .tokenItem-rightContent {
     align-items: flex-start;
     padding-top: 0.5rem;
+    flex: 0 0 auto;
   }
   .changeIndicator {
     margin-right: 4px;
@@ -422,3 +434,9 @@ body.starting .tokenContainer {
     font-size: 1.2rem;
   }
 }
+
+/* Even bigger screens! */
+@media (min-width: 2400px) {
+  .tokenContainer {
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  }
