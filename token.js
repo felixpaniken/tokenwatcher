@@ -22,6 +22,9 @@ var myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
 // Preferred Currency
 var prefCurrency = 'USD'
 
+// Current timeframe
+var currentTimeframe = '24h'
+
 // Container for our tokens
 const tokenContainer = document.querySelector('.tokenContainer')
 
@@ -659,6 +662,33 @@ const getHourlyOHLCV = (token) => {
   })
 }
 
+// Get daily OHLCV for token
+const getDailyOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=7`
+  ).then(response => {
+    return response.json()
+  })
+}
+
+// Get monthly OHLCV, by getting the daily for 30 days
+const getMonthlyOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=30`
+  ).then(response => {
+    return response.json()
+  })
+}
+
+// Get 3 months OHLCV, by getting the daily for 90 days
+const get3MonthOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=90`
+  ).then(response => {
+    return response.json()
+  })
+}
+
 // Creates and attaches a chart to a token item
 Chart.defaults.scale.gridLines.display = false;
 const createChart = (token, chartLabels, chartData) => {
@@ -830,23 +860,25 @@ const chartLabels = (token) => {
 
 // Build a complete chart for a token
 const buildChart = (token) => {
-  // Get hourly prices, this needs to be more flexible so we can get monthly etc instead of hourly
-  getHourlyOHLCV(token).then(response => {
-    // Array where our labels will go
-    var chartLabels = []
-    // Array where the data points will go
-    var chartData = []
-    // For each key in the object we got back from the fetch
-    Object.keys(response.Data).forEach(k => {
-      // Push a timestamp into chart labels
-      chartLabels.push(response.Data[k].time)
-      // Push a closing value into
-      chartData.push(response.Data[k].close)
+  // Get hourly prices depending on current timeframe only supports 24h for now will need changes once timeframes are togglable
+  if (currentTimeframe === '24h') {
+    getHourlyOHLCV(token).then(response => {
+      // Array where our labels will go
+      var chartLabels = []
+      // Array where the data points will go
+      var chartData = []
+      // For each key in the object we got back from the fetch
+      Object.keys(response.Data).forEach(k => {
+        // Push a timestamp into chart labels
+        chartLabels.push(response.Data[k].time)
+        // Push a closing value into
+        chartData.push(response.Data[k].close)
+      })
+      // Create the chart in a canvas document with the labels and data we requested
+      //createChart(token, chartLabels, chartData) - chart with labels
+      createMinChart(token, chartData) // Chart without labels
     })
-    // Create the chart in a canvas document with the labels and data we requested
-    //createChart(token, chartLabels, chartData) - chart with labels
-    createMinChart(token, chartData) // Chart without labels
-  })
+  }
 }
 
 // Build charts for all of the users tokens
