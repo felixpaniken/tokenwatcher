@@ -22,6 +22,9 @@ var myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
 // Preferred Currency
 var prefCurrency = 'USD'
 
+// Current timeframe
+var currentTimeframe = '24h'
+
 // Container for our tokens
 const tokenContainer = document.querySelector('.tokenContainer')
 
@@ -30,6 +33,9 @@ const allTokensContainer = document.querySelector('.allTokens-container')
 
 // Base image URL as reported from fetch
 var baseImageUrl = ""
+
+// Viewport width, for use in other functions
+var viewportWidth = window.innerWidth
 
 // Use everywhere viewport height, used to hide the all coins container
 var viewportHeight = window.innerHeight
@@ -193,10 +199,14 @@ const createTokenItem = coinList => {
 
     // Setting up the new token Div
     const newTokenDiv = document.createElement('div')
-
     // Giving token div a class
     newTokenDiv.className = 'tokenItem'
     newTokenDiv.dataset.token = coinList[k].coinSymbol
+
+
+    // Setting up a container for data, so we later can have a chart underneath
+    const newTokenData = document.createElement('div')
+    newTokenData.className = 'tokenItem-data'
 
     // Setting a animation delay on object according to which order it is
     // This needs to change to only apply for the first animation when the items come in
@@ -244,6 +254,11 @@ const createTokenItem = coinList => {
     tokenChange24.className = 'tokenChange'
     tokenChange24.innerHTML = `${coinList[k].prices.changeUSD} %`.replace('$', '').replace('-', '')
 
+    // Empty chart container
+    const tokenChartContainer = document.createElement('div')
+    tokenChartContainer.className = 'tokenChartContainer'
+    tokenChartContainer.innerHTML = 'Loading chart'
+
     // Append content
     tokenNameSymbol.appendChild(tokenName)
     tokenNameSymbol.appendChild(tokenSymbol)
@@ -254,11 +269,15 @@ const createTokenItem = coinList => {
     tokenDivRight.appendChild(tokenChange24)
 
 
-    // Append content divs to the token item div
-    newTokenDiv.appendChild(tokenIcon)
-    newTokenDiv.appendChild(tokenDivLeft)
-    newTokenDiv.appendChild(tokenValue)
-    newTokenDiv.appendChild(tokenDivRight)
+    // Append content divs to the token data div
+    newTokenData.appendChild(tokenIcon)
+    newTokenData.appendChild(tokenDivLeft)
+    newTokenData.appendChild(tokenValue)
+    newTokenData.appendChild(tokenDivRight)
+
+    // Append the data div to the token item
+    newTokenDiv.appendChild(newTokenData)
+    newTokenDiv.appendChild(tokenChartContainer)
 
     // Insert the new token item into token container
     tokenContainer.appendChild(newTokenDiv)
@@ -634,6 +653,248 @@ const setupAddTokenButton = () => {
   }
 }
 
+// Get hourly OHLCV data for token
+const getHourlyOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histohour?fsym=${token}&tsym=${prefCurrency}&limit=23`
+  ).then(response => {
+    return response.json()
+  })
+}
+
+// Get daily OHLCV for token
+const getDailyOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=7`
+  ).then(response => {
+    return response.json()
+  })
+}
+
+// Get monthly OHLCV, by getting the daily for 30 days
+const getMonthlyOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=30`
+  ).then(response => {
+    return response.json()
+  })
+}
+
+// Get 3 months OHLCV, by getting the daily for 90 days
+const get3MonthOHLCV = (token) => {
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=90`
+  ).then(response => {
+    return response.json()
+  })
+}
+
+// Creates and attaches a chart to a token item
+Chart.defaults.scale.gridLines.display = false;
+const createChart = (token, chartLabels, chartData) => {
+  // Find the token that will get chart attached
+  var targetToken = document.querySelector(`[data-token='${token}']`)
+  // Create chart element
+  const targetTokenChart = document.createElement('canvas')
+  targetTokenChart.id = `chart-${token}`
+  targetTokenChart.className = 'tokenChart'
+  targetTokenChart.innerHTML = ''
+  // Attach chart element to target token
+  targetToken.appendChild(targetTokenChart)
+
+  // Find the lowest value in the data set for the chart
+  var lowestDataValue = Math.min(...chartData)
+  // Create a smaller value for use as as floor in chart
+  var aestheticMin = lowestDataValue*0.98
+
+  var ctx = targetTokenChart.getContext('2d');
+  var chart = new Chart(ctx, {
+      // The type of chart we want to create
+      type: 'line',
+  
+      // The data for our dataset
+      data: {
+          labels: chartLabels,
+          datasets: [{
+              label: 'My First dataset',
+              backgroundColor: '#0047ff',
+              borderColor: '#0047ff',
+              pointRadius: 0,
+              data: chartData
+          }]
+      },
+  
+      // Configuration options go here
+      options: {
+        layout: {
+          padding: {
+            top: 40,
+          },
+        },
+        legend: {
+          display: false,
+        },
+        gridLines: {
+          display: false,
+        },
+        scales: {
+          xAxes: [{
+            display: false
+          }],
+          yAxes: [{
+            display: false,
+            ticks: {
+              suggestedMin: aestheticMin,
+            },
+          }],
+        },
+        plugins: {
+          // Change options for ALL labels of THIS CHART
+          datalabels: {
+            display: false,
+            color: 'rgba(0,0,0,0.5)',
+            align: 'end',
+            textAlign: 'end',
+            offset: 20,
+            font: {
+              weight: 'bold',
+            },
+            formatter: function(value, context) {
+              return chartData[context.dataIndex] + '\n' + chartLabels[context.dataIndex];
+            },
+          },
+        },
+      }
+  });
+}
+
+const createMinChart = (token, chartData) => {
+  // Find the token chart container that will get chart attached
+  var targetToken = document.querySelector(`[data-token='${token}']`).querySelector('.tokenChartContainer')
+  // Clear out the containers "loading"
+  targetToken.innerHTML = ''
+  // Create chart element
+  const targetTokenChart = document.createElement('canvas')
+  targetTokenChart.id = `chart-${token}`
+  targetTokenChart.className = 'tokenChart'
+  targetTokenChart.innerHTML = ''
+  // Attach chart element to target token
+  targetToken.appendChild(targetTokenChart)
+
+  // Find the lowest value in the data set for the chart
+  var lowestDataValue = Math.min(...chartData)
+  // Create a smaller value for use as as floor in chart
+  var aestheticMin = lowestDataValue*0.98
+
+  var ctx = targetTokenChart.getContext('2d');
+  var chart = new Chart(ctx, {
+      // The type of chart we want to create
+      type: 'line',
+  
+      // The data for our dataset
+      data: {
+          labels: chartData,
+          datasets: [{
+              label: 'My First dataset',
+              backgroundColor: '#0047ff',
+              borderColor: '#0047ff',
+              pointRadius: 0,
+              data: chartData
+          }]
+      },
+  
+      // Configuration options go here
+      options: {
+        maintainAspectRatio: false,
+        legend: {
+          display: false,
+        },
+        gridLines: {
+          display: false,
+        },
+        scales: {
+          xAxes: [{
+            display: false
+          }],
+          yAxes: [{
+            display: false,
+            ticks: {
+              suggestedMin: aestheticMin,
+            },
+          }],
+        },
+        plugins: {
+          // Change options for ALL labels of THIS CHART
+          datalabels: {
+            display: false,
+          },
+        },
+      }
+  });
+}
+
+const chartLabels = (token) => {
+  Chart.helpers.each(Chart.instances, instance => {
+    if (instance.chart.canvas.id === `chart-${token}`) {
+      instance.options.plugins.datalabels = {
+        color: 'rgba(0,0,0,0.5)',
+            align: 'end',
+            textAlign: 'end',
+            offset: 20,
+            font: {
+              weight: 'bold',
+            },
+    };
+      instance.update()
+      //instance.destroy();
+      //return;
+    }
+  })
+  /*
+  if (state === "on") {
+    console.log(`chart labels for ${token} turned on`)
+  } else if (state === "off") {
+    console.log(`chart labels for ${token} turned off`)
+  }*/
+}
+
+// Build a complete chart for a token
+const buildChart = (token) => {
+  // Get hourly prices depending on current timeframe only supports 24h for now will need changes once timeframes are togglable
+  if (currentTimeframe === '24h') {
+    getHourlyOHLCV(token).then(response => {
+      // Array where our labels will go
+      var chartLabels = []
+      // Array where the data points will go
+      var chartData = []
+      // For each key in the object we got back from the fetch
+      Object.keys(response.Data).forEach(k => {
+        // Push a timestamp into chart labels
+        chartLabels.push(response.Data[k].time)
+        // Push a closing value into
+        chartData.push(response.Data[k].close)
+      })
+      // Create the chart in a canvas document with the labels and data we requested
+      //createChart(token, chartLabels, chartData) - chart with labels
+      createMinChart(token, chartData) // Chart without labels
+    })
+  }
+}
+
+// Build charts for all of the users tokens
+const buildChartAll = () => {
+  myTokens.forEach((token) => {
+    buildChart(token)
+  })
+}
+
+// See if we load big screen things (only small charts for now)
+const bigScreenCheck = () => {
+  if (viewportWidth > '599') {
+    buildChartAll()
+  }
+}
+
 // This is the initial setup that runs when app starts
 toggleStarting(true)
 initialTokenSetup()
@@ -645,6 +906,7 @@ fetchTokenData(myTokens).then(() => {
     //setupAddTokenButton()
     saveUserTokens()
     toggleStarting(false)
+    bigScreenCheck()
   })
 })
 
@@ -653,4 +915,6 @@ fetchTokenData(myTokens).then(() => {
 const handleVisibilityChange = () => {
   //console.log(document.visibilityState);
 }
+
+// Check for visibility change
 document.addEventListener("visibilitychange", handleVisibilityChange, false);
