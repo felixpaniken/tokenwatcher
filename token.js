@@ -689,6 +689,58 @@ const get3MonthOHLCV = (token) => {
   })
 }
 
+// SO! This gets the average for 7 days vs 7 days. Turns out no exchange uses this and I need to check why
+const getAverage = (token) => {
+  let pricesPerDay = []
+  return fetch(
+    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=13`
+  ).then(response => {
+    return response.json()
+  }).then(response => {
+    console.log(response)
+    // For each key in the object we got back from the fetch
+    Object.keys(response.Data).forEach(k => {
+      let ourTime = new Date(response.Data[k].time*1000)
+      console.log(ourTime)
+      pricesPerDay.push(response.Data[k].close)
+      // Push a timestamp into chart labels
+      //chartLabels.push(response.Data[k].time)
+      // Push a closing value into
+      //chartData.push(response.Data[k].close)
+    })
+    console.log(pricesPerDay)
+    //let week1Prices = []
+    let thisWeek = pricesPerDay.splice(7)
+    let prevWeek = pricesPerDay
+    console.log(prevWeek)
+    console.log(thisWeek)
+    let prevWeekAverage = prevWeek.reduce((previous, current) => current += previous)/prevWeek.length
+    console.log(prevWeekAverage)
+    let thisWeekAverage = thisWeek.reduce((previous, current) => current += previous)/prevWeek.length
+    console.log(thisWeekAverage)
+    let weekChange = (thisWeekAverage - prevWeekAverage)/prevWeekAverage*100
+    console.log(weekChange)
+  })
+}
+
+// Get the price of token 7 days ago
+const getHistoricalPrice = (token, daysago) => {
+  // Create a date object that is today
+  let todayTS = new Date()
+  // Create a date that is 7 days back from today
+  let daysAgoTS = todayTS.setDate(todayTS.getDate()-daysago)
+  // Convert that timestamp from JS timestamp to UNIX timestamp
+  daysAgoTS = daysAgoTS/1000|0
+  // Fetch the average price of token seven days ago with UNIX timestamp
+  return fetch(
+    `https://min-api.cryptocompare.com/data/dayAvg?fsym=${token}&tsym=${prefCurrency}&toTs=${daysAgoTS}`
+  ).then(response => {
+    return response.json()
+  }).then(response => {
+    console.log(response)
+  })
+}
+
 // Creates and attaches a chart to a token item
 Chart.defaults.scale.gridLines.display = false;
 const createChart = (token, chartLabels, chartData) => {
