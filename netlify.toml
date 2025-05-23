@@ -1,0 +1,12 @@
+[build]
+  publish = "/"
+  command = ""  # No build command needed for static site
+
+[build.environment]
+  RUBY_VERSION = "2.7.2"  # Specify a modern Ruby version
+
+# Redirect all requests to index.html for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
