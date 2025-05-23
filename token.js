@@ -284,59 +284,65 @@ const createTokenItem = coinList => {
   })
 }
 
-// Populate all tokens list
+// Create a single token list item
+const createTokenListItem = (tokenKey) => {
+  const token = allTokens[tokenKey]
+  
+  // Setting up the container
+  const tokenDiv = document.createElement('div')
+  // Giving token div a class
+  tokenDiv.className = 'allTokenItem'
+  // Set the token symbol as a data attribute
+  tokenDiv.setAttribute('tokenSymbol', token.Symbol)
+
+  // Setting up token icon
+  const tokenIcon = document.createElement('div')
+  tokenIcon.className = 'allTokenItem-icon'
+  // save this away to add as a data attribute on the div, for use later
+  const tokenIconURL = `url('${baseImageUrl}${token.ImageUrl}')`
+  tokenIcon.setAttribute('tokenIconURL', tokenIconURL)
+
+  // Setting up the name of the token
+  const tokenName = document.createElement('span')
+  tokenName.className = 'tokenName'
+  tokenName.textContent = token.CoinName
+
+  // Setting up the token symbol
+  const tokenSymbol = document.createElement('span')
+  tokenSymbol.className = 'tokenSymbol'
+  tokenSymbol.textContent = token.Symbol
+  
+  // Check if the token is already saved in my tokens list
+  if (myTokens.includes(token.Symbol)) {
+    // if in my tokens list, add class savedToken so we can identify tokens already saved to list
+    tokenDiv.classList.add('savedToken')
+  }
+
+  // Setting up the button to add tokens to watch list
+  const buttonAddToken = document.createElement('div')
+  buttonAddToken.className = 'button secondary button-addToken'
+  buttonAddToken.textContent = 'Add'
+  
+  // Setting up the button to remove tokens to watch list
+  const buttonRemoveToken = document.createElement('div')
+  buttonRemoveToken.className = 'button secondary button-removeToken'
+  buttonRemoveToken.textContent = 'Remove'
+
+  tokenDiv.appendChild(tokenIcon)
+  tokenDiv.appendChild(tokenName)
+  tokenDiv.appendChild(tokenSymbol)
+  tokenDiv.appendChild(buttonAddToken)
+  tokenDiv.appendChild(buttonRemoveToken)
+
+  document.querySelector('.allTokens-list').appendChild(tokenDiv)
+  
+  return tokenDiv
+}
+
+// Populate all tokens list - now only used for initial setup
 const populateAllTokens = () => {
-  // Apparently this is bad performing
-  // https://jsperf.com/objdir
-  // Might try to optimise
-  Object.keys(allTokens).forEach(k => {
-    // Setting up the container
-    const tokenDiv = document.createElement('div')
-    // Giving token div a class
-    tokenDiv.className = 'allTokenItem'
-    // Set the token symbol as a data attribute
-    tokenDiv.setAttribute(`tokenSymbol`, `${allTokens[k].Symbol}`)
-
-    // Setting up token icon
-    const tokenIcon = document.createElement('div')
-    tokenIcon.className = 'allTokenItem-icon'
-    // save this away to add as a data attribute on the div, for use later
-    const tokenIconURL = `url('${baseImageUrl}${allTokens[k].ImageUrl}')`
-    tokenIcon.setAttribute(`tokenIconURL`, `${tokenIconURL}`)
-
-    // Setting up the name of the token
-    const tokenName = document.createElement('span')
-    tokenName.className = 'tokenName'
-    tokenName.innerHTML = allTokens[k].CoinName
-
-    // Setting up the token symbol
-    const tokenSymbol = document.createElement('span')
-    tokenSymbol.className = 'tokenSymbol'
-    tokenSymbol.innerHTML = allTokens[k].Symbol
-    // Check if the token is already saved in my tokens list
-    if (myTokens.includes(allTokens[k].Symbol)) {
-      // if in my tokens list, add class savedToken so we can identify tokens already saved to list
-      tokenDiv.classList.add('savedToken')
-    }
-
-    // Setting up the button to add tokens to watch list
-    const buttonAddToken = document.createElement('div')
-    buttonAddToken.className = 'button secondary button-addToken'
-    buttonAddToken.innerHTML = 'Add'
-    // Setting up the button to remove tokens to watch list
-    const buttonRemoveToken = document.createElement('div')
-    buttonRemoveToken.className = 'button secondary button-removeToken'
-    buttonRemoveToken.innerHTML = 'Remove'
-
-    tokenDiv.appendChild(tokenIcon)
-    tokenDiv.appendChild(tokenName)
-    tokenDiv.appendChild(tokenSymbol)
-    tokenDiv.appendChild(buttonAddToken)
-    tokenDiv.appendChild(buttonRemoveToken)
-
-    document.querySelector('.allTokens-list').appendChild(tokenDiv)
-    
-  })
+  // Clear the list first
+  document.querySelector('.allTokens-list').innerHTML = '<div class="search-instruction">Type at least 3 characters to search</div>'
 }
 
 // This finds values in token items and updates those values accordingly
@@ -462,23 +468,57 @@ const clearTokenContainer = () => {
 }
 
 // Handle input in the token search field 
-// Big up: https://www.w3schools.com/howto/howto_js_filter_lists.asp
 // Set up the vars we need
 const allTokenInput = document.querySelector('#tokenSearch')
+const allTokensList = document.querySelector('.allTokens-list')
+
 // Listen for event and do the filtering
 allTokenInput.addEventListener('input', event => {
-  let input, filter, ul, li, a, i;
-  input = allTokenInput
-  filter = input.value.toUpperCase();
-  ul = document.querySelector('.allTokens-list');
-  li = ul.querySelectorAll('.allTokenItem');
-  for (i = 0; i < li.length; i++) {
-    a = li[i].getElementsByTagName("span")[0];
-    if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
-        li[i].style.display = "";
-    } else {
-        li[i].style.display = "none";
+  const searchTerm = allTokenInput.value.trim().toUpperCase()
+  
+  // Clear previous results if search term is less than 3 characters
+  if (searchTerm.length < 3) {
+    allTokensList.innerHTML = '<div class="search-instruction">Type at least 3 characters to search</div>'
+    return
+  }
+  
+  // If we have tokens data and search term is valid, filter and display results
+  if (allTokens && Object.keys(allTokens).length > 0) {
+    // Clear previous results
+    allTokensList.innerHTML = ''
+    
+    // Filter tokens that match the search term (limit to 50 results for performance)
+    let matchCount = 0
+    const maxResults = 50
+    
+    Object.keys(allTokens).forEach(k => {
+      if (matchCount >= maxResults) return
+      
+      const tokenName = allTokens[k].CoinName
+      const tokenSymbol = allTokens[k].Symbol
+      
+      // Check if token name or symbol contains the search term
+      if (tokenName.toUpperCase().includes(searchTerm) || 
+          tokenSymbol.toUpperCase().includes(searchTerm)) {
+        
+        // Create token item element
+        createTokenListItem(k)
+        matchCount++
+      }
+    })
+    
+    // Show message if no results found
+    if (matchCount === 0) {
+      allTokensList.innerHTML = '<div class="no-results">No tokens found matching your search</div>'
+    } else if (matchCount === maxResults) {
+      const message = document.createElement('div')
+      message.className = 'results-limit'
+      message.textContent = 'Showing top 50 results. Refine your search for more specific tokens.'
+      allTokensList.appendChild(message)
     }
+    
+    // Set up add/remove buttons for the newly created items
+    setupAddTokenButton()
   }
 })
 
@@ -589,16 +629,41 @@ var oldMyTokens = {}
 buttonShowAllCoins.addEventListener('click', event => {
   // Copy myTokens so we know if it has changed later
   oldMyTokens = myTokens.slice()
-  console.log(oldMyTokens)
-  // Fetch and handle the list from cryptocompare of all tokens
-  getAllTokens().then(() => {
-    // Create the HTML
-    populateAllTokens()
-    // Hook up the add remove buttons in the all tokens list 
-    setupAddTokenButton()
-    // Show the window
-    showAllCoins()
-  })
+  
+  // Show the search interface immediately
+  showAllCoins()
+  
+  // Clear the search input
+  allTokenInput.value = ''
+  
+  // Initialize the list with instructions
+  populateAllTokens()
+  
+  // Fetch token data in the background if not already fetched
+  if (!allTokensFetched) {
+    // Show loading indicator
+    const loadingIndicator = document.createElement('div')
+    loadingIndicator.className = 'loading-indicator'
+    loadingIndicator.textContent = 'Loading token data...'
+    allTokensList.appendChild(loadingIndicator)
+    
+    // Fetch and handle the list from cryptocompare of all tokens
+    getAllTokens().then(() => {
+      // Remove loading indicator once data is loaded
+      const loadingElement = document.querySelector('.loading-indicator')
+      if (loadingElement) {
+        loadingElement.remove()
+      }
+      
+      // If user has already typed something, trigger the search
+      if (allTokenInput.value.trim().length >= 3) {
+        allTokenInput.dispatchEvent(new Event('input'))
+      }
+    }).catch(error => {
+      console.error('Error fetching token data:', error)
+      allTokensList.innerHTML = '<div class="error-message">Failed to load token data. Please try again.</div>'
+    })
+  }
 })
 
 // Hide all tokens list
