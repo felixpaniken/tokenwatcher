@@ -298,8 +298,10 @@ const createTokenListItem = (tokenKey) => {
   // Setting up token icon
   const tokenIcon = document.createElement('div')
   tokenIcon.className = 'allTokenItem-icon'
-  // save this away to add as a data attribute on the div, for use later
-  const tokenIconURL = `url('${baseImageUrl}${token.ImageUrl}')`
+  // Use the correct URL format with the CryptoCompare base URL
+  const tokenIconURL = `url('https://www.cryptocompare.com${token.ImageUrl}')`
+  tokenIcon.style.backgroundImage = tokenIconURL
+  // Also save as a data attribute for potential future use
   tokenIcon.setAttribute('tokenIconURL', tokenIconURL)
 
   // Setting up the name of the token
