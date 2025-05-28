@@ -551,6 +551,11 @@ const hideAllCoins = () => {
     duration: 800
   })
   document.body.classList.remove('addingTokens')
+  
+  // Rebuild charts for all tokens when returning to the pinned tokens view
+  setTimeout(() => {
+    buildChartAll()
+  }, 850) // Set timeout slightly longer than the animation duration
 }
 
 // Here's some code that detects overscroll, it works. But I'm not 100% on everything it does.
@@ -713,6 +718,9 @@ const setupAddTokenButton = () => {
           myTokens.push(thisButton.parentNode.getAttribute('tokensymbol'))  
           thisButton.parentNode.classList.add('savedToken')
         }
+        
+        // Save the updated token list
+        saveUserTokens()
       })
     })
   } else if (addRemoveSetupDone === true ) {
