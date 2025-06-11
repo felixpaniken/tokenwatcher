@@ -149,7 +149,7 @@ const updateTokenPrice = () => {
 // Get hourly OHLCV data for token
 const getHourlyOHLCV = (token) => {
   return fetch(
-    `https://min-api.cryptocompare.com/data/histohour?fsym=${token}&tsym=${prefCurrency}&limit=23`
+    `https://min-api.cryptocompare.com/data/histohour?fsym=${token}&tsym=${prefCurrency}&limit=48`
   ).then(response => {
     return response.json()
   })

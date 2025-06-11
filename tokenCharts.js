@@ -118,19 +118,27 @@ const createMinChart = (token, chartData) => {
       // The data for our dataset
       data: {
           datasets: [{
-              label: 'My First dataset',
+              label: 'Price',
               backgroundColor: 'rgba(0, 71, 255, 0.1)',
               borderColor: '#0047ff',
               pointRadius: 0,
+              borderWidth: 2,
+              fill: true,
+              lineTension: 0.2,
               data: chartData
           }]
       },
 
       // Configuration options go here
       options: {
+        responsive: true,
+        maintainAspectRatio: false,
         layout: {
           padding: {
-            top: 0,
+            top: 5,
+            bottom: 5,
+            left: 0,
+            right: 0
           },
         },
         legend: {
