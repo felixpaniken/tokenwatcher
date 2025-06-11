@@ -280,10 +280,14 @@ body.starting .tokenContainer {
   display: none;
   position: relative;
   height: 56px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .tokenChart {
   border-radius: 20px;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* All tokens list with all the tokens so user can add tokens to the list */
@@ -415,6 +419,8 @@ body.starting .tokenContainer {
   .tokenChartContainer {
     display: block;
     height: 6rem;
+    margin-top: 0.5rem;
+    padding: 0 0.5rem;
   }
   .tokenValue {
     position: relative;
