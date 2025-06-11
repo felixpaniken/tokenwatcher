@@ -1,26 +1,31 @@
-// Holds the users current tokens similar to myTokens but on XXXX format
-var coinList = {}
+// Import token data management functionality
+import {
+  coinList,
+  allCoins,
+  allTokens,
+  allTokensFetched,
+  myTokens,
+  prefCurrency,
+  baseImageUrl,
+  initialTokenSetup,
+  getAllTokens,
+  saveUserTokens,
+  loadUserTokens,
+  loadUserSettings,
+  fetchTokenPrice,
+  fetchTokenData,
+  updateTokenPrice,
+  getHourlyOHLCV,
+  getDailyOHLCV,
+  getMonthlyOHLCV,
+  get3MonthOHLCV
+} from './tokenData.js';
 
 // To see if conditions are met before updating prices
 var priceUpdateReady = false
 
 // Overscroll far enough to display all coin list?
 var showAllCoinsReady = false
-
-// All coins fetched
-var allCoins = {}
-
-// List of all tokens fetched
-var allTokens = {}
-
-// Control to see if we fetched all tokens this session
-var allTokensFetched = false
-
-// Array for users tokens (to be saved?)
-var myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
-
-// Preferred Currency
-var prefCurrency = 'USD'
 
 // Current timeframe
 var currentTimeframe = '24h'
@@ -30,9 +35,6 @@ const tokenContainer = document.querySelector('.tokenContainer')
 
 // Container that keeps all the coins available
 const allTokensContainer = document.querySelector('.allTokens-container')
-
-// Base image URL as reported from fetch
-var baseImageUrl = ""
 
 // Viewport width, for use in other functions
 var viewportWidth = window.innerWidth
@@ -49,143 +51,14 @@ const settingsCurrencies = document.querySelector('.settings-currencies')
 // Each currency option in currency settings
 const optionCurrency = document.querySelectorAll('.settings-currencies > .option')
 
-// Get all coin data
-const initialTokenSetup = () => {
-  // Check for saved tokens saved in local storage
-  loadUserTokens()
-  // Check for saved user settings in local storage
-  loadUserSettings()
-}
-
-const getAllTokens = () => {
-  // Check if we have already fetched all tokens this session
-  if (allTokensFetched === true) {
-     // We have fetched = return the data fetched earlier
-    console.log('already fetched')
-    return Promise.resolve(allTokens)
-  } else if (allTokensFetched === false) {
-    // This is the first time we fetch this sessions
-    console.log('not fetched')
-      //Getting all coins and saving them in array
-  allTokensFetched = true
-  console.log('fetching all coinlist from cryptocompare')
-  return fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
-    .then(response => {
-      return response.json()
-    })
-    .then(data => {
-      baseImageUrl = data.BaseImageUrl
-      allTokens = data.Data
-    })
-  }
-
-}
-
-// Function that updates the users token list in local storage
-const saveUserTokens = () => {
-  console.log('Saving user tokens to local storage')
-  // Put tokens from array in local storage but as a string
-  localStorage.setItem('userTokens', JSON.stringify(myTokens))
-  // Save the users preferred currency
-  localStorage.setItem('userCurrency', prefCurrency)
-}
-
-// See if the user has any saved tokens
-const loadUserTokens = () => {
-  console.log('Checking for saved tokens in local storage')
-  var savedTokens = localStorage.getItem('userTokens')
-  if (savedTokens) {
-    console.log('Found saved tokens in local storage')
-    // If we found saved tokens locally we set mytokens to be the saved ones
-    myTokens = JSON.parse(savedTokens);
-  } else {
-    console.log('No saved tokens in local storage, setting up standard list')
-    // If we did not find any saved tokens we set up the defaults
-    myTokens = ['ETH', 'BTC', 'APPC', 'XVG', 'BCH', 'XMR']
-  }
-}
-
-// See if the user has a saved preference for currency 
-// This might be extended to other settings (like theme) later
-const loadUserSettings = () => {
-  console.log('Checking for user settings in local storage')
-  var savedCurrency = localStorage.userCurrency
-  if (savedCurrency) {
-    console.log(`Found saved currency (${savedCurrency}) in local storage`)
-    prefCurrency = savedCurrency
-    optionCurrency.forEach((option) => {
-      if (prefCurrency === option.dataset.currency) {
-        option.classList.add('active')
-      } else {
-        option.classList.remove('active')
-      }
-    })
-  }
-}
-
-
-// Function that fetches prices for the tokens requested and returns the response data as JSON
-const fetchTokenPrice = tokens => {
-  console.log(`fetching value of ${tokens}`)
-  return fetch(
-    `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${tokens}&tsyms=USD,EUR,BTC`
-  )
-    .then(response => {
-      return response.json()
-    })
-    .catch(error => {
-      console.log(error.message)
-    })
-}
-
-// Function that fetches prices AND MORE for the tokens requested and returns the response data as JSON
-const fetchTokenData = tokens => {
-  console.log(`fetching data of ${tokens}`)
-  return fetch(
-    `https://min-api.cryptocompare.com/data/coin/generalinfo?fsyms=${tokens}&tsym=USD`
-    //`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${tokens}&tsyms=USD,EUR,BTC`
-  )
-    .then(response => {
-      return response.json()
-    })
-    .then(data => {
-      //console.log(data)
-      baseImageUrl = data.BaseImageUrl
-      allCoins = data.Data
-      // Building a complex array (with data returned) from myTokens
-      var i = -1;
-      myTokens.forEach(k => {
-        //console.log(k)
-        ++i
-        //console.log(i)
-        coinList[k] = {
-          coinName: allCoins[i].CoinInfo.FullName,
-          coinSymbol: allCoins[i].CoinInfo.Name,
-          tokenIcon: `https://www.cryptocompare.com${allCoins[i].CoinInfo.ImageUrl}`
-        }
-      })
-    })
-    .catch(error => {
-      console.log(error.message)
-    })
-}
-
-// Handle the JSON data coming from the fetch function and put the prices into object
-const updateTokenPrice = () => {
-  return fetchTokenPrice(myTokens).then(response => {
-    const displayData = response.DISPLAY
-    //console.log(displayData)
-    Object.keys(displayData).forEach(k => {
-      // Add new fresh prices to coinlist
-      coinList[k].prices = {
-        priceUSD: displayData[k].USD.PRICE,
-        changeUSD: displayData[k].USD.CHANGEPCT24HOUR,
-        priceEUR: displayData[k].EUR.PRICE,
-        changeEUR: displayData[k].EUR.CHANGEPCT24HOUR,
-        priceBTC: displayData[k].BTC.PRICE,
-        changeBTC: displayData[k].BTC.CHANGEPCT24HOUR
-      }
-    })
+// Update UI based on currency settings
+const updateCurrencyUI = () => {
+  optionCurrency.forEach((option) => {
+    if (prefCurrency === option.dataset.currency) {
+      option.classList.add('active')
+    } else {
+      option.classList.remove('active')
+    }
   })
 }
 
@@ -469,7 +342,7 @@ const clearTokenContainer = () => {
   document.querySelector('.tokenContainer').innerHTML = ''
 }
 
-// Handle input in the token search field 
+// Handle input in the token search field
 // Set up the vars we need
 const allTokenInput = document.querySelector('#tokenSearch')
 const allTokensList = document.querySelector('.allTokens-list')
@@ -477,38 +350,38 @@ const allTokensList = document.querySelector('.allTokens-list')
 // Listen for event and do the filtering
 allTokenInput.addEventListener('input', event => {
   const searchTerm = allTokenInput.value.trim().toUpperCase()
-  
+
   // Clear previous results if search term is less than 3 characters
   if (searchTerm.length < 3) {
     allTokensList.innerHTML = '<div class="search-instruction">Type at least 3 characters to search</div>'
     return
   }
-  
+
   // If we have tokens data and search term is valid, filter and display results
   if (allTokens && Object.keys(allTokens).length > 0) {
     // Clear previous results
     allTokensList.innerHTML = ''
-    
+
     // Filter tokens that match the search term (limit to 50 results for performance)
     let matchCount = 0
     const maxResults = 50
-    
+
     Object.keys(allTokens).forEach(k => {
       if (matchCount >= maxResults) return
-      
+
       const tokenName = allTokens[k].CoinName
       const tokenSymbol = allTokens[k].Symbol
-      
+
       // Check if token name or symbol contains the search term
-      if (tokenName.toUpperCase().includes(searchTerm) || 
+      if (tokenName.toUpperCase().includes(searchTerm) ||
           tokenSymbol.toUpperCase().includes(searchTerm)) {
-        
+
         // Create token item element
         createTokenListItem(k)
         matchCount++
       }
     })
-    
+
     // Show message if no results found
     if (matchCount === 0) {
       allTokensList.innerHTML = '<div class="no-results">No tokens found matching your search</div>'
@@ -518,7 +391,7 @@ allTokenInput.addEventListener('input', event => {
       message.textContent = 'Showing top 50 results. Refine your search for more specific tokens.'
       allTokensList.appendChild(message)
     }
-    
+
     // Set up add/remove buttons for the newly created items
     setupAddTokenButton()
   }
@@ -531,7 +404,7 @@ const loadTokenIcon = (el) => {
 
 // Function to enable all tokens picker
 const showAllCoins = () => {
-  // Instead of having separate containers, 
+  // Instead of having separate containers,
   // Empty out the container, put a loading spinner, populate container with tokens
   // Maybe not ever show all tokens, only show "trending" and then more if the user searches
   var animateAllCoinList = anime({
@@ -551,7 +424,7 @@ const hideAllCoins = () => {
     duration: 800
   })
   document.body.classList.remove('addingTokens')
-  
+
   // Rebuild charts for all tokens when returning to the pinned tokens view
   setTimeout(() => {
     buildChartAll()
@@ -636,16 +509,16 @@ var oldMyTokens = {}
 buttonShowAllCoins.addEventListener('click', event => {
   // Copy myTokens so we know if it has changed later
   oldMyTokens = myTokens.slice()
-  
+
   // Show the search interface immediately
   showAllCoins()
-  
+
   // Clear the search input
   allTokenInput.value = ''
-  
+
   // Initialize the list with instructions
   populateAllTokens()
-  
+
   // Fetch token data in the background if not already fetched
   if (!allTokensFetched) {
     // Show loading indicator
@@ -653,7 +526,7 @@ buttonShowAllCoins.addEventListener('click', event => {
     loadingIndicator.className = 'loading-indicator'
     loadingIndicator.textContent = 'Loading token data...'
     allTokensList.appendChild(loadingIndicator)
-    
+
     // Fetch and handle the list from cryptocompare of all tokens
     getAllTokens().then(() => {
       // Remove loading indicator once data is loaded
@@ -661,7 +534,7 @@ buttonShowAllCoins.addEventListener('click', event => {
       if (loadingElement) {
         loadingElement.remove()
       }
-      
+
       // If user has already typed something, trigger the search
       if (allTokenInput.value.trim().length >= 3) {
         allTokenInput.dispatchEvent(new Event('input'))
@@ -715,10 +588,10 @@ const setupAddTokenButton = () => {
         } else {
           // Add a token to my tokens list
           console.log(`Adding ${symbolOfToken} to myTokens`)
-          myTokens.push(thisButton.parentNode.getAttribute('tokensymbol'))  
+          myTokens.push(thisButton.parentNode.getAttribute('tokensymbol'))
           thisButton.parentNode.classList.add('savedToken')
         }
-        
+
         // Save the updated token list
         saveUserTokens()
       })
@@ -726,42 +599,6 @@ const setupAddTokenButton = () => {
   } else if (addRemoveSetupDone === true ) {
     console.log("Button setup already done")
   }
-}
-
-// Get hourly OHLCV data for token
-const getHourlyOHLCV = (token) => {
-  return fetch(
-    `https://min-api.cryptocompare.com/data/histohour?fsym=${token}&tsym=${prefCurrency}&limit=23`
-  ).then(response => {
-    return response.json()
-  })
-}
-
-// Get daily OHLCV for token
-const getDailyOHLCV = (token) => {
-  return fetch(
-    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=7`
-  ).then(response => {
-    return response.json()
-  })
-}
-
-// Get monthly OHLCV, by getting the daily for 30 days
-const getMonthlyOHLCV = (token) => {
-  return fetch(
-    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=30`
-  ).then(response => {
-    return response.json()
-  })
-}
-
-// Get 3 months OHLCV, by getting the daily for 90 days
-const get3MonthOHLCV = (token) => {
-  return fetch(
-    `https://min-api.cryptocompare.com/data/histoday?fsym=${token}&tsym=${prefCurrency}&limit=90`
-  ).then(response => {
-    return response.json()
-  })
 }
 
 // Creates and attaches a chart to a token item
@@ -786,7 +623,7 @@ const createChart = (token, chartLabels, chartData) => {
   var chart = new Chart(ctx, {
       // The type of chart we want to create
       type: 'line',
-  
+
       // The data for our dataset
       data: {
           labels: chartLabels,
@@ -798,7 +635,7 @@ const createChart = (token, chartLabels, chartData) => {
               data: chartData
           }]
       },
-  
+
       // Configuration options go here
       options: {
         layout: {
@@ -865,22 +702,25 @@ const createMinChart = (token, chartData) => {
   var chart = new Chart(ctx, {
       // The type of chart we want to create
       type: 'line',
-  
+
       // The data for our dataset
       data: {
-          labels: chartData,
           datasets: [{
               label: 'My First dataset',
-              backgroundColor: '#0047ff',
+              backgroundColor: 'rgba(0, 71, 255, 0.1)',
               borderColor: '#0047ff',
               pointRadius: 0,
               data: chartData
           }]
       },
-  
+
       // Configuration options go here
       options: {
-        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 0,
+          },
+        },
         legend: {
           display: false,
         },
@@ -921,16 +761,8 @@ const chartLabels = (token) => {
             },
     };
       instance.update()
-      //instance.destroy();
-      //return;
     }
   })
-  /*
-  if (state === "on") {
-    console.log(`chart labels for ${token} turned on`)
-  } else if (state === "off") {
-    console.log(`chart labels for ${token} turned off`)
-  }*/
 }
 
 // Build a complete chart for a token
@@ -973,18 +805,17 @@ const bigScreenCheck = () => {
 // This is the initial setup that runs when app starts
 toggleStarting(true)
 initialTokenSetup()
+// After initialTokenSetup, update the UI based on loaded settings
+updateCurrencyUI()
 fetchTokenData(myTokens).then(() => {
   updateTokenPrice().then(() => {
     createTokenItem(coinList)
     updateTokenItem(myTokens)
-    //populateAllTokens() Better to only do this when the user wants to add a new token
-    //setupAddTokenButton()
     saveUserTokens()
     toggleStarting(false)
     bigScreenCheck()
   })
 })
-
 
 // Check if app looses focus and fetch a price update when focus is regained
 const handleVisibilityChange = () => {
